@@ -1,0 +1,23 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.workingDirectories": ["./"],
+  "eslint.validate": [
+    "javascript",
+    { "language": "typescript", "autoFix": true },
+  ],
+  "eslint.packageManager": "yarn",
+  "eslint.enable": true,
+  "eslint.autoFixOnSave": true,
+  "editor.formatOnSave": true,
+  "[handlebars]": {
+    "editor.formatOnSave": false
+  },
+  "editor.rulers": [100],
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "workbench.colorCustomizations": {
+    "editorRuler.foreground": "#505050"
+  }
+}

@@ -1,0 +1,30 @@
+name: "Deploy container-platform"
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "!**/*.md"
+      - .github/workflows/deploy-pulumi-template.yaml
+      - .github/workflows/deploy-container-platform.yaml
+concurrency:
+  group: container-platform
+  cancel-in-progress: true
+
+jobs:
+  dev:
+    name: dev
+    uses: flo-kn/cloud-agnostic-container-mgmt/.github/workflows/deploy-pulumi-template.yaml@main
+    with:
+      pulumi-project-dir: product/container-platform
+      pulumi-stack: dev
+      aws-region: eu-central-1
+      environment-availability: availability-check
+      environment: dev
+      pulumi-backend: s3://cloud-agnostic-container-mgmt-pulumi-backend
+      role-arn: "arn:aws:iam::12345678910:role/GithubOIDCDeploymentRole"
+    secrets:
+      LEGO_GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.LEGO_GITHUB_PACKAGE_REGISTRY_TOKEN }}
+  # Add more envs if needed by
+  #qa:
+  #prod:
