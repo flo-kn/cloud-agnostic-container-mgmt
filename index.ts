@@ -1,51 +1,29 @@
-import {
-  IHelloWorldOnEksConfigs,
-  IInfrastructureDetails,
-  addAwsLoadBalancerController,
-  addExternalDnsPlugin,
-  createK8sCluster,
-  createNamespaces,
-  createVPC,
-} from "./src";
+import * as aws from "@pulumi/aws";
+import * as pulumi from "@pulumi/pulumi";
 
-export * from "./src";
+import { createKubernetesContainerPlatform } from "./src/kubernetes-platform/kubernetes-platform";
+import { tags } from "./src/tags/tags";
+import { registerAutoTags } from "./src/tags/autotag";
+import { IPulumiConfigs } from "./src/types";
 
-/**
- * Function to create the virtual network (VPC), the Kubernetes Cluster (EKS) along with 2 Kubernetes Plugins (ExternalDNS and ALBController) and finally a Helloworld namespace where our Helloworld App runs in.
- * @param props - All configs required to deploy the solution, such as `baseDomain` for the public DSN, or `instanceType` for the Kubernetes Cluster instances, etc. 
- * @returns vpc, cluster, cluster namespace, cluster provider
- */
-export const createInfrastructure = (
-  props: IHelloWorldOnEksConfigs,
-): IInfrastructureDetails => {
-  const { clusterConfigs, resourceConfigs } = props.infrastructure.props;
+const config = new pulumi.Config();
 
-  const vpc = createVPC();
+const pulumiConfigs = config.requireObject<IPulumiConfigs>("pulumi-configs");
 
-  const eksCluster = createK8sCluster(vpc, clusterConfigs);
+registerAutoTags(tags);
 
-  const awsLBController = addAwsLoadBalancerController(
-    vpc,
-    eksCluster.cluster,
-    eksCluster.roleProvider,
-    resourceConfigs?.awsLoadBalancerController,
-  );
+const delegationSet = new aws.route53.DelegationSet("delegation-set", {
+  referenceName: "delegation-set",
+});
 
-  const externalDNS = addExternalDnsPlugin(
-    eksCluster.roleProvider,
-    eksCluster.cluster,
-    resourceConfigs?.externalDNS,
-  );
+const hostedZone = new aws.route53.Zone("hosted-zone", {
+  name: pulumiConfigs.dns.baseDomainName,
+  delegationSetId: delegationSet.id,
+});
 
-  const k8sNamespaces = createNamespaces(
-    eksCluster.roleProvider,
-    clusterConfigs.namespace,
-  );
-
-  return {
-    vpc,
-    cluster: eksCluster.cluster,
-    helloworldNamespace: k8sNamespaces.namespace,
-    eksProvider: eksCluster.roleProvider,
-  };
-};
+const containerPlatform = createKubernetesContainerPlatform({
+  infrastructure: {
+    props: pulumiConfigs,
+    awsHostedZoneId: hostedZone.zoneId,
+  },
+});

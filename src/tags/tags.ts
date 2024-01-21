@@ -13,5 +13,4 @@ export const tags: Record<string, string> = {
   PulumiConfigName: config.name,
   PulumiProject: pulumi.getProject(),
   PulumiStack: pulumi.getStack(),
-  // ...add more tags here
 };

@@ -2,8 +2,8 @@ import * as aws from "@pulumi/aws";
 import * as eks from "@pulumi/eks";
 import * as k8s from "@pulumi/kubernetes";
 import { Output } from "@pulumi/pulumi";
-import { IVirtualHwResourcesConfigs } from "../..";
 import * as policyFile from "./policy.json";
+import { IVirtualHwResourcesConfigs } from "../../../types";
 
 export const addExternalDnsPlugin = (
   provider: k8s.Provider,
@@ -68,6 +68,7 @@ export const addExternalDnsPlugin = (
     "external-dns",
     {
       chart: "external-dns",
+      version: "1.14.1",
       repositoryOpts: {
         repo: "https://charts.bitnami.com/bitnami",
       },

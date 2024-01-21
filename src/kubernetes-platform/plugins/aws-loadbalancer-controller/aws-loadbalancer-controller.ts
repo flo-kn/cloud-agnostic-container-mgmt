@@ -4,8 +4,8 @@ import * as eks from "@pulumi/eks";
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
 import { Output } from "@pulumi/pulumi";
-import { IVirtualHwResourcesConfigs } from "../..";
 import * as policyFile from "./aws-load-balancer-controller-policy.json";
+import { IVirtualHwResourcesConfigs } from "../../../types";
 
 export const addAwsLoadBalancerController = (
   vpc: awsx.ec2.Vpc,
@@ -74,7 +74,7 @@ export const addAwsLoadBalancerController = (
     "lb",
     {
       chart: "aws-load-balancer-controller",
-      version: "1.4.3",
+      version: "1.6.2",
       repositoryOpts: {
         repo: "https://aws.github.io/eks-charts",
       },

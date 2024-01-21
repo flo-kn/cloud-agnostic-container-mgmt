@@ -60,9 +60,7 @@ export interface IPulumiConfigs {
 /**
  * A mapped type where for each key K is a value from the list of Plugin Names
  */
-export type K8sPlugins= 
-  | 'awsLoadBalancerController'
-  | 'externalDNS'
+export type K8sPlugins = "awsLoadBalancerController" | "externalDNS";
 
 export type IResourcesConfigs = {
   [K in K8sPlugins]?: IVirtualHwResourcesConfigs;
@@ -81,7 +79,7 @@ export interface IPublicDnsConfig {
 /**
  * Properties necessary for the provisioning of the Helloworld on EKS infrastructure.
  */
-export interface IInfrastructureDetails {
+export interface IInfrastructureConfigs {
   vpc: awsx.ec2.Vpc;
   cluster: eks.Cluster;
   helloworldNamespace: Output<string>;

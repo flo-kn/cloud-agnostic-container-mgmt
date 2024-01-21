@@ -3,7 +3,7 @@ import * as awsx from "@pulumi/awsx";
 import * as eks from "@pulumi/eks";
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
-import { IClusterConfigs } from "./types";
+import { IClusterConfigs } from "../types";
 
 export const createK8sCluster = (vpc: awsx.ec2.Vpc, props: IClusterConfigs) => {
   // Create a new IAM role on the account caller to use as a cluster admin.
