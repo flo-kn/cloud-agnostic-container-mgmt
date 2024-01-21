@@ -3,18 +3,17 @@ import { Output } from "@pulumi/pulumi";
 
 export const createNamespaces = (
   provider: k8s.Provider,
-  HelloWorldNamespaceName = "helloworld",
+  namespaceName = "default-helloWorld", // override default in the pulumi yaml confs param
 ): {
-  helloWorldNamespace: Output<string>;
+  namespace: Output<string>;
 } => {
-  // Create a Kubernetes Namespace
-  const helloWorldNamespace = new k8s.core.v1.Namespace(
-    HelloWorldNamespaceName,
-    { metadata: { name: HelloWorldNamespaceName } },
+  const namespace = new k8s.core.v1.Namespace(
+    namespaceName,
+    { metadata: { name: namespaceName } },
     { provider },
   );
 
   return {
-    helloWorldNamespace: helloWorldNamespace.metadata.name,
+    namespace: namespace.metadata.name,
   };
 };

@@ -1,7 +1,6 @@
 import * as awsx from "@pulumi/awsx";
-import { IVPCDetails } from ".";
 
-export const createVPC = (vpcDetailsConfig: IVPCDetails) => {
+export const createVPC = () => {
   const vpc = new awsx.ec2.Vpc("Vpc", {
     cidrBlock: "172.17.0.0/16",
     enableDnsHostnames: true,

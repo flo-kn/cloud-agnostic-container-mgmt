@@ -2,13 +2,14 @@ import * as aws from "@pulumi/aws";
 import * as eks from "@pulumi/eks";
 import * as k8s from "@pulumi/kubernetes";
 import { Output } from "@pulumi/pulumi";
-import { IResourceConfigs } from "../..";
+import { IVirtualHwResourcesConfigs } from "../..";
 import * as policyFile from "./policy.json";
 
-export const createExternalDNSPlugin = (
+export const addExternalDnsPlugin = (
   provider: k8s.Provider,
   cluster: eks.Cluster,
-  externalDNSResourceConfigs: IResourceConfigs = {
+  // here we provide some default resources constraints for this plugin
+  externalDNSResourceConfigs: IVirtualHwResourcesConfigs = {
     limits: {
       cpu: "50m",
       memory: "50Mi",

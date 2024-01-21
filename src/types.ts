@@ -19,52 +19,64 @@ export interface ICertificate {
  * A pulumi aws.route53.DelegationSet and a pulumi aws.route53.Zone should be created before using
  * this construct.
  */
-export interface IDNSConfig {
+export interface IPublicDnsConfig {
   /**
-   * The base domain name to be used for creating the proxy endpoint for the data-plane
-   * ex. : eu-west-1-dev.gateway.api.legogroup.io
+   * The base domain name to be used for creating the proxy endpoint for the data-plane. E.g. "my-cloud-agnostic-app.my-domain.com"
    */
-  base_domain_name: string;
-}
-
-export interface IResourcesConfigs {
-  awsLoadBalancerController?: IResourceConfigs;
-  externalDNS?: IResourceConfigs;
+  baseDomainName: string;
 }
 
 export interface IClusterConfigs {
-  instance_type: Input<InstanceType>;
-  desired_capacity: number;
-  min_size: number;
-  max_size: number;
-  kong_namespace?: string;
+  instanceType: Input<InstanceType>;
+  desiredCapacity: number;
+  minSize: number;
+  maxSize: number;
+  namespace?: string;
 }
 
+/**
+ * IPulumiConfigs - The type for funnelling in the structure of the pulumi configs from the yaml
+ */
 export interface IPulumiConfigs {
-  pulumi_stack_name: string;
-  cluster_configs: IClusterConfigs;
-  dns: IDNSConfig;
   /**
-   * IVPCDetails for configuring the default vpc
+   * Name of the Pulumi Stack, e.g. "qa"
    */
-  vpc_details: IVPCDetails;
+  pulumiStackName: string;
   /**
-   * Limits and requests resource configs for the following
+   * Cluster Configuration
+   */
+  clusterConfigs: IClusterConfigs;
+  /**
+   *  DNS Configuration
+   */
+  dns: IPublicDnsConfig;
+  /**
+   * Limits and requests virtual hardware resource configs for the following
    * Some sensible defaults are used if nothing is passed
    */
-  resource_configs?: IResourcesConfigs;
+  resourceConfigs?: IResourcesConfigs;
 }
+
+/**
+ * A mapped type where for each key K is a value from the list of Plugin Names
+ */
+export type K8sPlugins= 
+  | 'awsLoadBalancerController'
+  | 'externalDNS'
+
+export type IResourcesConfigs = {
+  [K in K8sPlugins]?: IVirtualHwResourcesConfigs;
+};
 
 /**
  * A pulumi aws.route53.DelegationSet and a pulumi aws.route53.Zone should be created before using
  * this construct.
  */
-export interface IDNSConfig {
+export interface IPublicDnsConfig {
   /**
-   * The base domain name to be used for creating the proxy endpoint for the data-plane
-   * ex. : eu-west-1-dev.gateway.api.legogroup.io
+   * The base domain name to be used for the public services exposed by the cluster  e.g. : my-app.my-domain.com
    */
-  base_domain_name: string;
+  baseDomainName: string;
 }
 /**
  * Properties necessary for the provisioning of the Helloworld on EKS infrastructure.
@@ -76,44 +88,24 @@ export interface IInfrastructureDetails {
   eksProvider: k8s.Provider;
 }
 
-export interface IVPCDetails {
-  availability_zone_1: string;
-  availability_zone_2: string;
-}
-
-export interface IClusterConfigs {
-  instance_type: Input<InstanceType>;
-  desired_capacity: number;
-  min_size: number;
-  max_size: number;
-  helloworld_namespace?: string;
-  monitoring_namespace?: string;
-}
-
-export interface IResourcesConfigParams {
-  cpu: string;
-  memory: string;
-}
-
-export interface IResourceConfigs {
-  limits: IResourcesConfigParams;
-  requests: IResourcesConfigParams;
-}
-
-export interface IEKSConfig {
-  /**
-   * Configuration for the EKS cluster
-   */
-  clusterConfigs: IClusterConfigs;
+export interface IVirtualHwResourcesConfigs {
+  limits: {
+    cpu: string;
+    memory: string;
+  };
+  requests: {
+    cpu: string;
+    memory: string;
+  };
 }
 
 /**
- * Properties necessary for the provisioning of helloworld on EKS infrastructure.
+ * Configs necessary for the provisioning of helloworld on EKS infrastructure.
  */
-export interface IHelloWorldOnEKSProps {
+export interface IHelloWorldOnEksConfigs {
   infrastructure: {
     /**
-     * Properties necessary for the provisioning of the Kong Control Plane on EKS infrastructure.
+     * Configs necessary for the provisioning of the Hello World on EKS infrastructure.
      */
     props: IPulumiConfigs;
     /**

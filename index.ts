@@ -1,55 +1,51 @@
-/* eslint-disable no-console */
 import {
-  IHelloWorldOnEKSProps,
+  IHelloWorldOnEksConfigs,
   IInfrastructureDetails,
-  createAWSLoadBalancerController,
-  createExternalDNSPlugin,
+  addAwsLoadBalancerController,
+  addExternalDnsPlugin,
   createK8sCluster,
   createNamespaces,
   createVPC,
-} from './src';
+} from "./src";
 
-export * from './src';
+export * from "./src";
 
+/**
+ * Function to create the virtual network (VPC), the Kubernetes Cluster (EKS) along with 2 Kubernetes Plugins (ExternalDNS and ALBController) and finally a Helloworld namespace where our Helloworld App runs in.
+ * @param props - All configs required to deploy the solution, such as `baseDomain` for the public DSN, or `instanceType` for the Kubernetes Cluster instances, etc. 
+ * @returns vpc, cluster, cluster namespace, cluster provider
+ */
 export const createInfrastructure = (
-  props: IHelloWorldOnEKSProps
-  ): IInfrastructureDetails => {
-    const {
-      cluster_configs,
-      vpc_details,
-      resource_configs,
-    } = props.infrastructure.props;
+  props: IHelloWorldOnEksConfigs,
+): IInfrastructureDetails => {
+  const { clusterConfigs, resourceConfigs } = props.infrastructure.props;
 
-  const vpc = createVPC(vpc_details);
+  const vpc = createVPC();
 
-  const eksCluster = createK8sCluster(vpc, {
-    clusterConfigs: cluster_configs,
-  });
+  const eksCluster = createK8sCluster(vpc, clusterConfigs);
 
-  const awsLBController = createAWSLoadBalancerController(
+  const awsLBController = addAwsLoadBalancerController(
     vpc,
     eksCluster.cluster,
     eksCluster.roleProvider,
-    resource_configs?.awsLoadBalancerController
+    resourceConfigs?.awsLoadBalancerController,
   );
 
-  const externalDNS = createExternalDNSPlugin(
+  const externalDNS = addExternalDnsPlugin(
     eksCluster.roleProvider,
     eksCluster.cluster,
-    resource_configs?.externalDNS
+    resourceConfigs?.externalDNS,
   );
 
   const k8sNamespaces = createNamespaces(
     eksCluster.roleProvider,
-    cluster_configs.helloworld_namespace,
+    clusterConfigs.namespace,
   );
 
   return {
     vpc,
     cluster: eksCluster.cluster,
-    helloworldNamespace: k8sNamespaces.helloWorldNamespace,
+    helloworldNamespace: k8sNamespaces.namespace,
     eksProvider: eksCluster.roleProvider,
   };
-
-
 };

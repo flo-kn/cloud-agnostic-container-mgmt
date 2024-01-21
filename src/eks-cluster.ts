@@ -3,11 +3,9 @@ import * as awsx from "@pulumi/awsx";
 import * as eks from "@pulumi/eks";
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
-import { IEKSConfig } from ".";
+import { IClusterConfigs } from "./types";
 
-export const createK8sCluster = (vpc: awsx.ec2.Vpc, props: IEKSConfig) => {
-  const { clusterConfigs } = props;
-
+export const createK8sCluster = (vpc: awsx.ec2.Vpc, props: IClusterConfigs) => {
   // Create a new IAM role on the account caller to use as a cluster admin.
   const accountId = pulumi.output(aws.getCallerIdentity({})).accountId;
 
@@ -27,7 +25,7 @@ export const createK8sCluster = (vpc: awsx.ec2.Vpc, props: IEKSConfig) => {
     }),
   );
 
-  const clusterAdminRoleTags = { clusterAccess: "admin-usr" };
+  const clusterAdminRoleTags = { clusterAccess: "admin-user" };
 
   const clusterAdminRole = new aws.iam.Role("clusterAdminRole", {
     assumeRolePolicy,
@@ -39,10 +37,10 @@ export const createK8sCluster = (vpc: awsx.ec2.Vpc, props: IEKSConfig) => {
     vpcId: vpc.vpcId,
     privateSubnetIds: vpc.privateSubnetIds,
     publicSubnetIds: vpc.publicSubnetIds,
-    instanceType: clusterConfigs.instance_type,
-    desiredCapacity: clusterConfigs.desired_capacity,
-    minSize: clusterConfigs.min_size,
-    maxSize: clusterConfigs.max_size,
+    instanceType: props.instanceType,
+    desiredCapacity: props.desiredCapacity,
+    minSize: props.minSize,
+    maxSize: props.maxSize,
     providerCredentialOpts: {
       profileName: aws.config.profile,
     },
@@ -51,11 +49,11 @@ export const createK8sCluster = (vpc: awsx.ec2.Vpc, props: IEKSConfig) => {
       {
         groups: ["system:masters"],
         roleArn: clusterAdminRole.arn,
-        username: "pulumi:admin-usr",
+        username: "pulumi:admin-user",
       },
     ],
     createOidcProvider: true,
-    version: "1.21",
+    version: "1.28",
   });
 
   // Create a role-based kubeconfig with the named profile and the new
@@ -75,6 +73,6 @@ export const createK8sCluster = (vpc: awsx.ec2.Vpc, props: IEKSConfig) => {
     { dependsOn: [cluster.provider] },
   );
 
-  // Export the cluster's kubeconfig.
+  // Export the cluster's kubeconfig at the end of deployment log output
   return { cluster, roleProvider };
 };

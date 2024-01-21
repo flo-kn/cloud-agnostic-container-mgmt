@@ -4,14 +4,15 @@ import * as eks from "@pulumi/eks";
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
 import { Output } from "@pulumi/pulumi";
-import { IResourceConfigs } from "../..";
+import { IVirtualHwResourcesConfigs } from "../..";
 import * as policyFile from "./aws-load-balancer-controller-policy.json";
 
-export const createAWSLoadBalancerController = (
+export const addAwsLoadBalancerController = (
   vpc: awsx.ec2.Vpc,
   cluster: eks.Cluster,
   provider: k8s.Provider,
-  awsLoadBalancerControllerResourceConfigs: IResourceConfigs = {
+  // here we provide some default resources constraints for this plugin
+  awsLoadBalancerControllerResourceConfigs: IVirtualHwResourcesConfigs = {
     limits: {
       cpu: "100m",
       memory: "128Mi",
