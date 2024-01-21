@@ -23,7 +23,6 @@ export const createVPC = (vpcDetailsConfig: IVPCDetails) => {
           "kubernetes.io/role/internal-elb": "1",
         },
         cidrBlocks: ["172.17.4.0/22"],
-
       },
       {
         type: "Public",
@@ -31,7 +30,7 @@ export const createVPC = (vpcDetailsConfig: IVPCDetails) => {
         tags: {
           "kubernetes.io/role/elb": "1",
         },
-          cidrBlocks: ["172.17.8.64/26"],
+        cidrBlocks: ["172.17.8.64/26"],
       },
       {
         type: "Public",
@@ -39,8 +38,7 @@ export const createVPC = (vpcDetailsConfig: IVPCDetails) => {
         tags: {
           "kubernetes.io/role/elb": "1",
         },
-          cidrBlocks: ["172.17.8.0/26"],
-
+        cidrBlocks: ["172.17.8.0/26"],
       },
     ],
   });

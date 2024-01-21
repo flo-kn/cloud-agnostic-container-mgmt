@@ -9,9 +9,7 @@ export const createK8sCluster = (vpc: awsx.ec2.Vpc, props: IEKSConfig) => {
   const { clusterConfigs } = props;
 
   // Create a new IAM role on the account caller to use as a cluster admin.
-  const accountId = pulumi.output(
-    aws.getCallerIdentity({  }),
-  ).accountId;
+  const accountId = pulumi.output(aws.getCallerIdentity({})).accountId;
 
   const assumeRolePolicy = accountId.apply((id) =>
     JSON.stringify({
@@ -54,7 +52,7 @@ export const createK8sCluster = (vpc: awsx.ec2.Vpc, props: IEKSConfig) => {
         groups: ["system:masters"],
         roleArn: clusterAdminRole.arn,
         username: "pulumi:admin-usr",
-      }
+      },
     ],
     createOidcProvider: true,
     version: "1.21",

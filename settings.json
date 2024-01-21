@@ -15,6 +15,9 @@
   "[handlebars]": {
     "editor.formatOnSave": false
   },
+  "[typescript]": {
+    "editor.formatOnSave": true
+  },
   "editor.rulers": [100],
   "typescript.tsdk": "node_modules/typescript/lib",
   "workbench.colorCustomizations": {
