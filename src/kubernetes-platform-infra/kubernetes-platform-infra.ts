@@ -2,7 +2,7 @@ import { IHelloWorldOnEksConfigs, IInfrastructureConfigs } from "../types";
 import { createK8sCluster } from "./eks-cluster";
 import { createNamespaces } from "./namespaces";
 import { addAwsLoadBalancerController, addExternalDnsPlugin } from "./plugins";
-import { createVPC } from "./vpc";
+import { createVPC as createVpc } from "./vpc";
 
 /**
  * Function to create the virtual network (VPC), the Kubernetes Cluster (EKS) along with 2 Kubernetes Plugins (ExternalDNS and ALBController) and finally a Helloworld namespace where our Helloworld App runs in.
@@ -14,11 +14,11 @@ export const createKubernetesContainerPlatform = (
 ): IInfrastructureConfigs => {
   const { clusterConfigs, resourceConfigs } = props.infrastructure.props;
 
-  const vpc = createVPC();
+  const vpc = createVpc();
 
   const eksCluster = createK8sCluster(vpc, clusterConfigs);
 
-  const awsLBController = addAwsLoadBalancerController(
+  const awsLbController = addAwsLoadBalancerController(
     vpc,
     eksCluster.cluster,
     eksCluster.roleProvider,
