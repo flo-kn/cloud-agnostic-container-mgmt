@@ -1,19 +1,8 @@
-/* eslint-disable no-mixed-spaces-and-tabs */
-import * as aws from "@pulumi/aws";
 import { InstanceType } from "@pulumi/aws/ec2";
 import * as awsx from "@pulumi/awsx";
 import * as eks from "@pulumi/eks";
 import * as k8s from "@pulumi/kubernetes";
 import { Input, Output } from "@pulumi/pulumi";
-
-export interface ICertificate {
-  certArn: Output<string>;
-  domainName: Output<string>;
-  domainValidationOptions: Output<
-    aws.types.output.acm.CertificateDomainValidationOption[]
-  >;
-  record: string;
-}
 
 /**
  * A pulumi aws.route53.DelegationSet and a pulumi aws.route53.Zone should be created before using
@@ -26,11 +15,30 @@ export interface IPublicDnsConfig {
   baseDomainName: string;
 }
 
+/**
+ * Configuration Values for provisioning the EKS Cluster
+ */
 export interface IClusterConfigs {
+  /**
+   * Compute instance type. In our case we use EC2. 
+   * Use this https://aws.amazon.com/ec2/instance-types/ to get an overview of types
+   */
   instanceType: Input<InstanceType>;
+  /**
+   * Numbers of nodes in the k8s cluster
+   */
   desiredCapacity: number;
+  /**
+   * Minimal amount of nodes in the k8s cluster
+   */
   minSize: number;
+  /**
+   * Maximal amount of nodes in the k8s cluster
+   */
   maxSize: number;
+  /**
+   * Name of the Namespace to be created on cluster creation
+   */
   namespace?: string;
 }
 
@@ -77,7 +85,7 @@ export interface IPublicDnsConfig {
   baseDomainName: string;
 }
 /**
- * Properties necessary for the provisioning of the Helloworld on EKS infrastructure.
+ * Properties necessary for the provisioning of the Helloworld on EKS infrastructure including, namespace, vpc, etc. .
  */
 export interface IInfrastructureConfigs {
   vpc: awsx.ec2.Vpc;
@@ -86,6 +94,9 @@ export interface IInfrastructureConfigs {
   eksProvider: k8s.Provider;
 }
 
+/**
+ * CPU and Memory Specification needed from the k8s cluster
+ */
 export interface IVirtualHwResourcesConfigs {
   limits: {
     cpu: string;

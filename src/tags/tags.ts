@@ -7,7 +7,7 @@ const config = new pulumi.Config();
  */
 export const tags: Record<string, string> = {
   /**
-   * Tag the resource with the name of the deployment tool that provisioned the resource 
+   * Tag the resource with the name of the deployment tool that provisioned the resource
    */
   DeploymentTool: "pulumi",
   PulumiConfigName: config.name,

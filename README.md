@@ -1,23 +1,24 @@
 # cloud-agnostic-container-mgmt
 
-A project to help you run container workloads the cloud-agnostic style.
+A project to help you run container workloads the cloud-agnostic style. 
 
-For demonstrating we run a single page website on an nginx web server container. 
+For demonstration, we run a single page website on an nginx web server container. We will use a platform that will allow us to run the websites's workload on any cloud provider: Kubernetes in combination with a few so called Kubernetes Plugins. This technology stack is especially advantageous when you want to keep the door open for a eventual migration to another cloud provider with a manageable amount of effort. Here is the tec stack:
 
-## What's the point? 
+TODO: Add Tec Stack here
 
-Isn't hard to achieve agnosticy to a satisfying extent. Well, yes. You are right in a way that is something that we have to balance. I mean there was an original reason why we decided to leave out data center strategy where we a responsible for ourselves about things like hardware management. Etc. and we don't plane to go back to that as we hope to get an advantage from it. Similar to a car manufacturer that does not raise his cows to get the leather for the car seats\
+## FAQs
 
-So you should decide between this two extreme poles: Fully usage of custom services and data center
+### How can using AWS EKS be cloud-agnostic?
 
-## What about cloud-agnostic DNS Service?
+t.b.a.
 
-## TODO
+### What's a "Kubernetes Plugin"?
 
-Add Morpheus Meme!!
-with the plugins
+t.b.a.
 
-add the tech stack
+### What about cloud-agnostic DNS Service?
+
+t.b.a.
 
 ## Make it prettier
 

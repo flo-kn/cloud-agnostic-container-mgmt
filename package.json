@@ -31,8 +31,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "jest --config jestconfig.json",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
-    "lint": "eslint -p tsconfig.json"
+    "format": "prettier --write ."
   }
 }

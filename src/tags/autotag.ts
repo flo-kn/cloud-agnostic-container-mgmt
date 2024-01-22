@@ -2,12 +2,11 @@ import * as pulumi from "@pulumi/pulumi";
 import { isTaggable } from "./taggable";
 
 /**
- * Registers a global stack transformation that merges a set
- * of tags with whatever was also explicitly added to the resource definition.
+ * Here we ensure tagging for cloud resources.
+ * Registers a global stack transformation that merges a set of tags with whatever was also explicitly added to the resource definition.
  *
- * URLs and doc
  * Troubleshooting: registerStackTransformation: https://github.com/pulumi/pulumi/issues/6214
- * Pulumi Blog Post: https://www.pulumi.com/blog/automatically-enforcing-aws-resource-tagging-policies/
+ * Original idea from this Pulumi Blog Post: https://www.pulumi.com/blog/automatically-enforcing-aws-resource-tagging-policies/
  *
  */
 export const registerAutoTags = (autoTags: Record<string, string>): void => {
