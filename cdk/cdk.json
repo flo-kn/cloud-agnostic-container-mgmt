@@ -1,0 +1,15 @@
+{
+  "app": "npx ts-node --prefer-ts-exts bin/eks-cdk-js.ts",
+  "context": {
+    "eks-addon-vpc-cni-version": "v1.7.5-eksbuild.2",
+    "eks-addon-kube-proxy-version": "v1.24.10-eksbuild.2",
+    "eks-addon-coredns-version": "v1.10.1-eksbuild.7",
+    "cluster-autoscaler-helm-version": "9.34.1",
+    "aws-load-balancer-controller-helm-version": "1.6.2",
+    "aws-ebs-csi-driver-helm-version": "2.27.0",
+    "aws-efs-csi-driver-helm-version": "2.5.4",
+    "secrets-store-csi-helm-version": "0.4.0",
+    "aws-calico-helm-version": "0.3.11",
+    "cluster_name" : "myfirstcluster"
+  }
+}

@@ -1,0 +1,14 @@
+encryptionsalt: v1:TDTw2fzogig=:v1:rBHtD9IR7jfQJ++N:e3puYmj25hazAReCSdyolTX+YtHgFw==
+config:
+  aws:region: eu-central-1
+  cloud-agnostic-container-mgmt:pulumi-configs:
+    clusterConfigs:
+      desiredCapacity: 2
+      # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#AvailableInstanceTypes
+      instanceType: t3.medium
+      maxSize: 2
+      minSize: 1
+      additionalRoleMappings:
+        awsSsoAdminRoleArn: arn:aws:iam::532401623664:role/aws-reserved/sso.amazonaws.com/eu-central-1/AWSReservedSSO_AdministratorAccess_a9d894902e397b4e
+    dns:
+      baseDomainName: "multi-cloud-demo.company-as-code.com"

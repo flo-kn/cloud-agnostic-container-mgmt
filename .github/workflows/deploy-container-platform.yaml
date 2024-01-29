@@ -21,7 +21,7 @@ jobs:
       aws-region: eu-central-1
       environment-availability: availability-check
       environment: dev
-      pulumi-backend: s3://cloud-agnostic-container-mgmt-pulumi-backend
+      pulumi-backend: s3://<your-pulumi-backend-name>
       role-arn: "arn:aws:iam::12345678910:role/GithubOIDCDeploymentRole"
     secrets:
       LEGO_GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.LEGO_GITHUB_PACKAGE_REGISTRY_TOKEN }}

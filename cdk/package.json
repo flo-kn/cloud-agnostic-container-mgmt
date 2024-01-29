@@ -1,12 +1,10 @@
 {
-  "name": "cloud-agnostic-container-mgmt",
+  "name": "eks-cdk-js",
+  "version": "0.2.0",
   "license": "UNLICENSED",
-  "version": "1.0.0",
-  "start": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "files": [
-    "lib/**/*"
-  ],
+  "bin": {
+    "eks-cdk-js": "bin/eks-cdk-js.js"
+  },
   "author": "florian@knip-builds.de",
   "devDependencies": {
     "@types/node": "17.0.35",
@@ -21,16 +19,18 @@
     "typescript": "*"
   },
   "dependencies": {
-    "@pulumi/aws": "^6.18.0",
-    "@pulumi/awsx": "^2.4.0",
-    "@pulumi/eks": "^2.1.0",
-    "@pulumi/kubernetes": "^4.7.0"
+    "@types/js-yaml": "^4.0.9",
+    "aws-cdk-lib": "^2.124.0",
+    "constructs": "^10.0.0",
+    "js-yaml": "^4.1.0"
   },
   "engines": {
     "node": ">=14.0.0"
   },
   "scripts": {
-    "build": "tsc",
-    "format": "prettier --write ."
+    "build": "npm run lint && tsc",
+    "watch": "tsc -w",
+    "cdk": "npm run lint && cdk",
+    "lint": "eslint -c .eslintrc.js ./bin/*.ts ./lib/*.ts --fix"
   }
 }

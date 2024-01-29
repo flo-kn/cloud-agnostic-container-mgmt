@@ -14,32 +14,34 @@ export const createKubernetesContainerPlatform = (
 ): IInfrastructureConfigs => {
   const { clusterConfigs, resourceConfigs } = props.infrastructure.props;
 
-  const vpc = createVpc();
+  const name = "helloworld"
 
-  const eksCluster = createK8sCluster(vpc, clusterConfigs);
+  const vpc = createVpc(name);
+
+  const eksCluster = createK8sCluster(vpc, clusterConfigs, name);
 
   const awsLbController = addAwsLoadBalancerController(
-    vpc,
+    eksCluster.cluster.core.vpcId,
     eksCluster.cluster,
     eksCluster.roleProvider,
     resourceConfigs?.awsLoadBalancerController,
   );
 
-  const externalDNS = addExternalDnsPlugin(
-    eksCluster.roleProvider,
-    eksCluster.cluster,
-    resourceConfigs?.externalDNS,
-  );
+  // const externalDNS = addExternalDnsPlugin(
+  //   eksCluster.roleProvider,
+  //   eksCluster.cluster,
+  //   resourceConfigs?.externalDNS,
+  // );
 
-  const k8sNamespaces = createNamespaces(
-    eksCluster.roleProvider,
-    clusterConfigs.namespace,
-  );
+  // const k8sNamespaces = createNamespaces(
+  //   eksCluster.roleProvider,
+  //   clusterConfigs.namespace,
+  // );
 
   return {
     vpc,
     cluster: eksCluster.cluster,
-    helloworldNamespace: k8sNamespaces.namespace,
-    eksProvider: eksCluster.roleProvider,
+    // helloworldNamespace: k8sNamespaces.namespace,
+    eksRoleProvider: eksCluster.roleProvider,
   };
 };

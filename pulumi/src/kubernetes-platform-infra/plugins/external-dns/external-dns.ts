@@ -68,7 +68,7 @@ export const addExternalDnsPlugin = (
     "external-dns",
     {
       chart: "external-dns",
-      version: "1.14.1",
+      version: "6.31.0",
       repositoryOpts: {
         repo: "https://charts.bitnami.com/bitnami",
       },

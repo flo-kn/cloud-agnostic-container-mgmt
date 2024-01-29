@@ -20,7 +20,7 @@ export interface IPublicDnsConfig {
  */
 export interface IClusterConfigs {
   /**
-   * Compute instance type. In our case we use EC2. 
+   * Compute instance type. In our case we use EC2.
    * Use this https://aws.amazon.com/ec2/instance-types/ to get an overview of types
    */
   instanceType: Input<InstanceType>;
@@ -40,6 +40,10 @@ export interface IClusterConfigs {
    * Name of the Namespace to be created on cluster creation
    */
   namespace?: string;
+  /**
+   * Name of the IAM
+   */
+  additionalRoleMappings: IAdditionalRoleMappings;
 }
 
 /**
@@ -90,9 +94,20 @@ export interface IPublicDnsConfig {
 export interface IInfrastructureConfigs {
   vpc: awsx.ec2.Vpc;
   cluster: eks.Cluster;
-  helloworldNamespace: Output<string>;
-  eksProvider: k8s.Provider;
+  helloworldNamespace?: k8s.core.v1.Namespace;
+  eksRoleProvider: k8s.Provider;
 }
+
+/**
+ * Properties necessary for mapping additional IAM roles to the cluster
+ */
+export interface IAdditionalRoleMappings {
+  /**
+   * IAM Role ARN required in order for admins to deploy and conduct changes when being logged in with their personal sso session from terminal
+   */
+  awsSsoAdminRoleArn: string;
+}
+
 
 /**
  * CPU and Memory Specification needed from the k8s cluster

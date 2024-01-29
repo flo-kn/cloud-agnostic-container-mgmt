@@ -1,14 +1,14 @@
 import * as aws from "@pulumi/aws";
-import * as awsx from "@pulumi/awsx";
 import * as eks from "@pulumi/eks";
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
 import { Output } from "@pulumi/pulumi";
-import * as policyFile from "./aws-load-balancer-controller-policy.json";
 import { IVirtualHwResourcesConfigs } from "../../../types";
+import * as policyFile from "./aws-load-balancer-controller-policy.json";
 
 export const addAwsLoadBalancerController = (
-  vpc: awsx.ec2.Vpc,
+  // vpc: awsx.ec2.Vpc,
+  vpcId: pulumi.Output<string>,
   cluster: eks.Cluster,
   provider: k8s.Provider,
   // here we provide some default resources constraints for this plugin
@@ -56,6 +56,55 @@ export const addAwsLoadBalancerController = (
     },
   );
 
+  // // Define the ClusterRole
+  // const clusterRole = new k8s.rbac.v1.ClusterRole(
+  //   "aws-lb-controller-policy-endpoints",
+  //   {
+  //     apiVersion: "rbac.authorization.k8s.io/v1",
+  //     kind: "ClusterRole",
+  //     metadata: {
+  //       name: "aws-lb-controller-policy-endpoints",
+  //     },
+  //     rules: [
+  //       {
+  //         apiGroups: ["networking.k8s.io"],
+  //         resources: ["policyendpoints"],
+  //         verbs: ["watch", "list"],
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     provider: cluster.core.provider,
+  //   },
+  // );
+
+  // // Define the ClusterRoleBinding
+  // const clusterRoleBinding = new k8s.rbac.v1.ClusterRoleBinding(
+  //   "aws-lb-controller-endpoints-binding",
+  //   {
+  //     apiVersion: "rbac.authorization.k8s.io/v1",
+  //     kind: "ClusterRoleBinding",
+  //     metadata: {
+  //       name: "aws-lb-controller-policy-endpoints-binding",
+  //     },
+  //     roleRef: {
+  //       kind: "ClusterRole",
+  //       name: "aws-lb-controller-policy-endpoints", // Ensure this is the correct name
+  //       apiGroup: "rbac.authorization.k8s.io",
+  //     },
+  //     subjects: [
+  //       {
+  //         kind: "ServiceAccount",
+  //         name: "aws-lb-controller-service-account",
+  //         namespace: "kube-system",
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     provider: cluster.core.provider,
+  //   },
+  // );
+
   const serviceAccount = new k8s.core.v1.ServiceAccount(
     "aws-lb-controller-service-account",
     {
@@ -85,7 +134,8 @@ export const addAwsLoadBalancerController = (
           name: "aws-lb-controller-service-account",
           create: false,
         },
-        vpcId: vpc.vpcId,
+        // vpcId: vpc.vpcId,
+        vpcId: vpcId,
         clusterName: cluster.core.cluster.name,
         podLabels: {
           app: "aws-lb-controller",
