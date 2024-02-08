@@ -1,11 +1,26 @@
-*.js
 !jest.config.js
 *.d.ts
 node_modules
-.vscode
+
 # CDK asset staging directory
 .cdk.staging
 cdk.out
-# Other files
-test/eks-cdk-js.test.ts
-cdk.context.json
+
+# Parcel default cache directory
+.parcel-cache
+
+*.pem
+
+# no lib
+lib
+
+assets
+
+# test coverage from jest
+coverage
+
+yarn-error.log
+
+#include everything within /bin/src
+!src/bin/
+!src/bin/*

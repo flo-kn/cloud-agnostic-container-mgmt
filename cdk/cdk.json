@@ -1,15 +1,31 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/eks-cdk-js.ts",
+  "app": "npx ts-node --prefer-ts-exts lib/bin/deployment.js",
   "context": {
-    "eks-addon-vpc-cni-version": "v1.7.5-eksbuild.2",
-    "eks-addon-kube-proxy-version": "v1.24.10-eksbuild.2",
-    "eks-addon-coredns-version": "v1.10.1-eksbuild.7",
-    "cluster-autoscaler-helm-version": "9.34.1",
-    "aws-load-balancer-controller-helm-version": "1.6.2",
-    "aws-ebs-csi-driver-helm-version": "2.27.0",
-    "aws-efs-csi-driver-helm-version": "2.5.4",
-    "secrets-store-csi-helm-version": "0.4.0",
-    "aws-calico-helm-version": "0.3.11",
-    "cluster_name" : "myfirstcluster"
+    "@aws-cdk/core:enableStackNameDuplicates": "true",
+    "aws-cdk:enableDiffNoFail": "true",
+    "@aws-cdk/core:stackRelativeExports": "true",
+    "@aws-cdk/aws-ecr-assets:dockerIgnoreSupport": true,
+    "@aws-cdk/aws-secretsmanager:parseOwnedSecretName": true,
+    "@aws-cdk/aws-kms:defaultKeyPolicies": true,
+    "@aws-cdk/aws-s3:grantWriteWithoutAcl": true,
+    "@aws-cdk/aws-ecs-patterns:removeDefaultDesiredCount": true,
+    "global": {
+      "service_name": "helloWolrd"
+    },
+    "environments": [
+      {
+        "account_id": "",
+        "name": "dev",
+        "delegation_set_id": "/delegationset/XXXXXX",
+        "caller_reference": "helloworld",
+        "domain": "exmample.hw.de",
+        "node_min_capacity": "3",
+        "azure_tenant": "1223343",
+        "oauth_audience": "1223444",
+        "secrets_service_account": "Service_Account_For_Owning_AAD_Applications",
+      }
+
+
+    ]
   }
 }
