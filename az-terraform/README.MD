@@ -25,6 +25,7 @@ Update terraform vars:
 ```sh
 Update your terraform.tfvars file
 ```
+(You can set default values or pass the values in the prompt in when you `terraform apply`)
 
 init the project 
 
@@ -33,51 +34,6 @@ terraform init
 ```
 
 
-interact with the cluster. Update the cubeconfig
-```sh
-az aks get-credentials --resource-group causal-macaque-rg --name helloWorld
-```
-
-```sh
-az role assignment create --role Contributor --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/comic-panther-rg --assignee $CLIENT_ID
-```
-
-```sh
-az role assignment create --role Contributor --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/comic-panther-rg --assignee $CLIENT_ID
-{
-  ...
-  "createdOn": "2024-02-04T14:11:12.194858+00:00",
-  "delegatedManagedIdentityResourceId": null,
-  "description": null,
-  "id": "/subscriptions/bea4e0c6-4843-4ad8-a7da-26bf10f3ef78/resourceGroups/comic-panther-rg/providers/Microsoft.Authorization/roleAssignments/53722211-096a-4145-a43d-8b27d252b041",
-  ...
-}
-```
-
-```sh
-az ad sp create-for-rbac --name "helm-agic-service-princ" --sdk-auth | base64 -b 0
-
-WARNING: Option '--sdk-auth' has been deprecated and will be removed in a future release.
-WARNING: The output includes credentials that you must protect. Be sure that you do not include these credentials in your code or check the credentials into your source control. For more information, see https://aka.ms/azadsp-cli
-ewogICJjbGllbnRJZCI6ICJkYjUwMzc2OS0xOWNkLTQ5MzUtODRkZC1hNTc0Zjg0YjI1YzciLAogICJjbGllbnRTZWNyZXQiOiAiMDVCOFF+Lk1JRTFzSF9MTlYyRjFpbUwzTmtPaFV6bS1CbDVHSGRjUyIsCiAgInN1YnNjcmlwdGlvbklkIjogImJlYTRlMGM2LTQ4NDMtNGFkOC1hN2RhLTI2YmYxMGYzZWY3OCIsCiAgInRlbmFudElkIjogIjRmNTAxYjIxLWQyYWQtNGI1OC04ODA2LTM3OTE4NWM3ZTM3YSIsCiAgImFjdGl2ZURpcmVjdG9yeUVuZHBvaW50VXJsIjogImh0dHBzOi8vbG9naW4ubWljcm9zb2Z0b25saW5lLmNvbSIsCiAgInJlc291cmNlTWFuYWdlckVuZHBvaW50VXJsIjogImh0dHBzOi8vbWFuYWdlbWVudC5henVyZS5jb20vIiwKICAiYWN0aXZlRGlyZWN0b3J5R3JhcGhSZXNvdXJjZUlkIjogImh0dHBzOi8vZ3JhcGgud2luZG93cy5uZXQvIiwKICAic3FsTWFuYWdlbWVudEVuZHBvaW50VXJsIjogImh0dHBzOi8vbWFuYWdlbWVudC5jb3JlLndpbmRvd3MubmV0Ojg0NDMvIiwKICAiZ2FsbGVyeUVuZHBvaW50VXJsIjogImh0dHBzOi8vZ2FsbGVyeS5henVyZS5jb20vIiwKICAibWFuYWdlbWVudEVuZHBvaW50VXJsIjogImh0dHBzOi8vbWFuYWdlbWVudC5jb3JlLndpbmRvd3MubmV0LyIKfQo=
-```
-
-Copy the base64 encoded output 
-
-```hcl
-  ...
-  set_sensitive {
-    name  = "armAuth.secretJSON"
-    value = "<Base64EncodedJsonOutput>"
-  }
-  ...
-```
-
-
-encode the secret stuff: 
-```
-echo -n '{"clientId":"foo","clientSecret":"bar","subscriptionId":"buz","tenantId":"fuz"}' | base64 
-```
 ## Refs: 
 - https://developer.hashicorp.com/terraform/tutorials/kubernetes/aks
 - https://github.com/Azure/application-gateway-kubernetes-ingress/blob/master/docs/setup/install-new.md
@@ -86,6 +42,10 @@ echo -n '{"clientId":"foo","clientSecret":"bar","subscriptionId":"buz","tenantId
 - https://artifacthub.io/packages/helm/azure-application-gateway-kubernetes-ingress/ingress-azure?modal=values
 - https://www.youtube.com/watch?v=PngRsyHyYQE
 - https://github.com/HoussemDellai/docker-kubernetes-course/tree/main/35_app_gateway_ingress
+- [federated identity with terraform](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_federated_identity_credential)
+- [diagram for workload identity](https://azure.github.io/AKS-DevSecOps-Workshop/modules/Module1/lab-workloadidentity.html)
+- [Adam Kielar - CLI way of running through](https://www.adamkielar.pl/posts/how-to-use-an-azure-ad-workload-identity-on-azure-kubernetes-service/)
+- [Youtube - Adam Kielar - ](https://www.youtube.com/watch?v=vEqvEYEl8EM)
 
 ## Trouble shhooting
 
@@ -93,4 +53,59 @@ Error: Kubernetes cluster unreachable: invalid configuration: no configuration h
 terraform init -upgrade 
 
 
+ToDo:
+Terraform the following:
+- [ ] add tags
+- [ ] Check if waf configuration could be optional
+- [ ] Check dockerbridge if it can get removed: docker_bridge_cidr
+- [ ] Add option to make RBAC true for the example
+- [ ] IP Range von /8 auf mindestens /16 verringern
+- [ ] aksClusterName=aks70f7
+- [ ] resourceGroupName=helloWorldResourceGroup
+- [ ] az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName
+- [ ] oidcUrl="$(az aks show --name $aksClusterName --resource-group $resourceGroupName --query "oidcIssuerProfile.issuerUrl" -o tsv)"
+- [ ] echo $oidcUrl
+- [ ] orkloadIdentity="workload-identity"
+- [ ] az identity create --name $workloadIdentity --resource-group $resourceGroupName
+- [ ] clientId=$(az identity show --name $workloadIdentity --resource-group $resourceGroupName --query clientId -o tsv)
+- [ ] create role assignment
+      ``` 
+      az role assignment create \
+      --assignee $clientId \
+      --role 'Contributor' \
+      --scope /subscriptions/bea4e0c6-4843-4ad8-a7da-26bf10f3ef78/resourceGroups/$resourceGroupName
+      ```
+
+- [ ] code sa.yaml
+      ```yaml
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        annotations:
+          azure.workload.identity/client-id: 08084f07-a23a-4bbf-90e3-847bacefcb55
+        labels:
+          azure.workload.identity/use: "true"
+        name: workload-sa
+        namespace: default
+      ```
+- [ ] kubectl apply -f sa.yaml
+- [ ] helm repo add application-gateway-kubernetes-ingress https://appgwingress.blob.core.windows.net/ingress-azure-helm-package/
+- [ ] helm repo update
+- [ ] Install
+      ```
+      helm install ingress-azure \
+        -f helm-config.yaml \
+        application-gateway-kubernetes-ingress/ingress-azure \
+        --version 1.7.2
+      ```
+- [ ] create federated identity
+      ```
+      az identity federated-credential create \
+      --name "aks-federated-credential" \
+      --identity-name $workloadIdentity \
+      --resource-group $resourceGroupName \
+      --issuer "${oidcUrl}" \
+      --subject "system:serviceaccount:default:ingress-azure"
+      ```
+      
 

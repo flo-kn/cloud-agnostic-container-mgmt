@@ -1,11 +1,12 @@
-resource "random_pet" "prefix" {}
 
 provider "azurerm" {
   features {}
 }
 
-resource "azurerm_resource_group" "mulit_cloud_hw" {
-  name     = "${random_pet.prefix.id}-rg"
+data "azurerm_subscription" "current" {}
+
+resource "azurerm_resource_group" "multi_cloud_demo" {
+  name     = "multi-cloud-demo-rg"
   location = "Germany West Central"
 
   tags = {
@@ -13,170 +14,60 @@ resource "azurerm_resource_group" "mulit_cloud_hw" {
   }
 }
 
-# Network
+resource "azurerm_user_assigned_identity" "identity" {
+  name                = local.identityName
+  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
+  location            = azurerm_resource_group.multi_cloud_demo.location
+}
 
 resource "azurerm_virtual_network" "vnet" {
-    name                        = "vnet"
-    location                    = azurerm_resource_group.mulit_cloud_hw.location
-    resource_group_name         = azurerm_resource_group.mulit_cloud_hw.name
-    address_space               = [var.ipspace]
-    tags                        = {
-    environment = "MultiCloudHelloWorld"
-  }
+  name                = local.vnetName
+  address_space       = [var.virtualNetworkAddressPrefix]
+  location            = azurerm_resource_group.multi_cloud_demo.location
+  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
 }
 
-# Subnets
-
-resource "azurerm_subnet" "aks_subnet" {
-  name                 = "myAKSSubnetPublic"
-  resource_group_name  = azurerm_resource_group.mulit_cloud_hw.name
+resource "azurerm_subnet" "kubernetes" {
+  name                 = local.kubernetesSubnetName
+  resource_group_name  = azurerm_resource_group.multi_cloud_demo.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = [var.vmPrivSubnet]
-  
+  address_prefixes     = [var.aksSubnetAddressPrefix]
 }
 
-resource "azurerm_subnet" "app_gateway_subnet" {
-  name                 = "myAKSSubnetPrivate"
-  resource_group_name  = azurerm_resource_group.mulit_cloud_hw.name
+resource "azurerm_subnet" "aks_appgw" {
+  name                 = local.applicationGatewaySubnetName
+  resource_group_name  = azurerm_resource_group.multi_cloud_demo.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = [var.vmPubSubnet]
+  address_prefixes     = [var.applicationGatewaySubnetAddressPrefix]
 }
 
-# Base Identity for managing AKS
-resource "azurerm_user_assigned_identity" "base" {
-  name                = "base"
-  location            = azurerm_resource_group.mulit_cloud_hw.location
-  resource_group_name = azurerm_resource_group.mulit_cloud_hw.name
+resource "azurerm_public_ip" "appgw_public_ip" {
+  name                = local.applicationGatewayPublicIpName
+  location            = azurerm_resource_group.multi_cloud_demo.location
+  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
 }
-
-resource "azurerm_role_assignment" "base" {
-  scope                = azurerm_resource_group.mulit_cloud_hw.id
-  role_definition_name = "Contributor"
-  principal_id         = azurerm_user_assigned_identity.base.principal_id
-}
-
-# Create an AKS cluster
-resource "azurerm_kubernetes_cluster" "mulit_cloud_hw" {
-  name                      = "helloWorld"
-  sku_tier                  = "Free"
-  kubernetes_version        =  "1.27.7"
-  location                  = azurerm_resource_group.mulit_cloud_hw.location
-  resource_group_name       = azurerm_resource_group.mulit_cloud_hw.name
-  dns_prefix                = "helloWorld"
-  workload_identity_enabled = true
-  oidc_issuer_enabled       = true
-
-  default_node_pool {
-    name            = "helloworld"
-    node_count      = 2
-    vm_size         = "Standard_D2_v2"
-    os_disk_size_gb = 30
-    vnet_subnet_id  = azurerm_subnet.aks_subnet.id
-  }
-
-  network_profile {
-    network_plugin    = "azure"  # or "azure" depending on your requirement
-    service_cidr      = "10.2.0.0/16" #some none overlapping from the outer one
-    dns_service_ip    = "10.2.0.10"
-   }
-
-   identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.base.id]
-  }
-
-  # service_principal {
-  #   client_id     = var.appId
-  #   client_secret = var.password
-  # }
-
-  role_based_access_control_enabled = false
-
-  tags = {
-    environment = "HelloWorld"
-  }
-
-  depends_on = [
-    azurerm_role_assignment.base
-  ]
-}
-
-
-# setup prerequs for workload identiy
-# resource "azurerm_user_assigned_identity" "helloworld_azure_identity" {
-#   resource_group_name = azurerm_resource_group.mulit_cloud_hw.name
-#   location            = azurerm_resource_group.mulit_cloud_hw.location
-#   name                = "helloworld-azure-identity"
-# }
-
-# resource "azurerm_role_assignment" "helloworld_azure_role_assignment" {
-#   scope                = azurerm_resource_group.mulit_cloud_hw.id
-#   role_definition_name = "Contributor"
-#   principal_id         = azurerm_user_assigned_identity.helloworld_azure_identity.principal_id
-# }
-
-
-resource "azurerm_user_assigned_identity" "dev_test" {
-  name                = "dev-test"
-  location            = azurerm_resource_group.mulit_cloud_hw.location
-  resource_group_name = azurerm_resource_group.mulit_cloud_hw.name
-}
-
-resource "azurerm_federated_identity_credential" "dev_test" {
-  name                = "dev-test"
-  resource_group_name = azurerm_resource_group.mulit_cloud_hw.name
-  audience            = ["api://AzureADTokenExchange"]
-  issuer              = azurerm_kubernetes_cluster.mulit_cloud_hw.oidc_issuer_url
-  parent_id           = azurerm_user_assigned_identity.dev_test.id
-  subject             = "system:serviceaccount:dev:my-account"
-
-  depends_on = [azurerm_kubernetes_cluster.mulit_cloud_hw]
-}
-
-# Configure Provider
-
-provider "kubernetes" {
-  host                   = azurerm_kubernetes_cluster.mulit_cloud_hw.kube_config.0.host
-  client_certificate     = base64decode(azurerm_kubernetes_cluster.mulit_cloud_hw.kube_config.0.client_certificate)
-  client_key             = base64decode(azurerm_kubernetes_cluster.mulit_cloud_hw.kube_config.0.client_key)
-  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.mulit_cloud_hw.kube_config.0.cluster_ca_certificate)
-}
-
-
-# resource "kubernetes_manifest" "aad_pod_identity" {
-#   manifest = yamldecode(file("${path.module}/aad-pod-deployment.yaml"))
-# }
-
-# Todo: Install HELM chart of AAD Pod thingy
-
-
-# HELM stuff 
-provider "helm" {
-  kubernetes {
-    host                   = azurerm_kubernetes_cluster.mulit_cloud_hw.kube_config.0.host
-    client_certificate     = base64decode(azurerm_kubernetes_cluster.mulit_cloud_hw.kube_config.0.client_certificate)
-    client_key             = base64decode(azurerm_kubernetes_cluster.mulit_cloud_hw.kube_config.0.client_key)
-    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.mulit_cloud_hw.kube_config.0.cluster_ca_certificate)
-  }
-}
-
-# Application Gateway and Ingress Controller setup will be more complex and depend on specific requirements.
-# Basic setup of Application Gateway (without detailed ingress controller configuration)
 
 resource "azurerm_application_gateway" "aks_appgw" {
-  name                = "helloWorldAppGateway"
-  location            = azurerm_resource_group.mulit_cloud_hw.location
-  resource_group_name = azurerm_resource_group.mulit_cloud_hw.name
+  name                = local.applicationGatewayName
+  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
+  location            = azurerm_resource_group.multi_cloud_demo.location
 
   sku {
-    name     = "Standard_v2"
-    tier     = "Standard_v2"
+    name     = var.applicationGatewaySku
+    tier     = var.applicationGatewaySku
     capacity = 2
   }
 
   gateway_ip_configuration {
-    name      = "helloWorldGatewayIpConfig"
-    subnet_id = azurerm_subnet.app_gateway_subnet.id
+    name      = "appGatewayIpConfig"
+    subnet_id = azurerm_subnet.aks_appgw.id # Ensure you have a subnet resource defined for this
+  }
+
+  frontend_ip_configuration {
+    name                 = "appGatewayFrontendIP"
+    public_ip_address_id = azurerm_public_ip.appgw_public_ip.id # Ensure you have a public IP resource defined for this
   }
 
   frontend_port {
@@ -184,215 +75,181 @@ resource "azurerm_application_gateway" "aks_appgw" {
     port = 80
   }
 
-  frontend_ip_configuration {
-    name                 = "publicIpAddress"
-    public_ip_address_id = azurerm_public_ip.aks_appgw_public_ip.id
+  frontend_port {
+    name = "httpsPort"
+    port = 443
   }
 
   backend_address_pool {
-    name = "appGatewayBackendPool"
-    ip_addresses = []
+    name = "bepool"
+  }
+
+  http_listener {
+    name                           = "httpListener"
+    frontend_ip_configuration_name = "appGatewayFrontendIP"
+    frontend_port_name             = "httpPort"
+    protocol                       = "Http"
   }
 
   backend_http_settings {
-    name                  = "httpSetting"
+    name                  = "setting"
     cookie_based_affinity = "Disabled"
     port                  = 80
     protocol              = "Http"
     request_timeout       = 20
   }
 
-  http_listener {
-    name                           = "listener"
-    frontend_ip_configuration_name = "publicIpAddress"
-    frontend_port_name             = "httpPort"
-    protocol                       = "Http"
-  }
-
+  # Needs at least one rule
   request_routing_rule {
     name                       = "rule1"
-    priority                   = abs(100)
     rule_type                  = "Basic"
-    http_listener_name         = "listener"
-    backend_address_pool_name  = "appGatewayBackendPool"
-    backend_http_settings_name = "httpSetting"
-  }
-}
-
-resource "azurerm_public_ip" "aks_appgw_public_ip" {
-  name                = "helloWorldAppGatewayPublicIp"
-  location            = azurerm_resource_group.mulit_cloud_hw.location
-  resource_group_name = azurerm_resource_group.mulit_cloud_hw.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
-
-# # # get more infos about values here: https://github.com/Azure/application-gateway-kubernetes-ingress/blob/master/helm/ingress-azure/values.yaml
-
-# Get the AAD Pod Stuff first
-# resource "helm_release" "aad_pod_identity" {
-#   name       = "aad-pod-identity"
-#   repository = "https://raw.githubusercontent.com/Azure/aad-pod-identity"
-#   chart      = "aad-pod-identity"
-#   version    = "1.8.6"
-# }
-
-resource "helm_release" "agic" {
-  name       = "agic"
-  repository = "https://appgwingress.blob.core.windows.net/ingress-azure-helm-package/"
-  chart      = "ingress-azure"
-  version    = "1.7.3-rc1"
-  namespace = "kube-system"
-
-  set {
-    name  = "appgw.resourceGroup"
-    value = azurerm_resource_group.mulit_cloud_hw.name
+    http_listener_name         = "httpListener"
+    backend_address_pool_name  = "bepool"
+    priority                   =  abs(100)
+    backend_http_settings_name = "setting"
   }
 
-  set {
-    name  = "appgw.name"
-    value = azurerm_application_gateway.aks_appgw.name
+  # Conditional WAF Configuration  
+  dynamic "waf_configuration" {
+    for_each = var.applicationGatewaySku == "WAF_v2" ? [1] : []
+    content {
+      enabled          = true
+      firewall_mode    = "Detection"
+      rule_set_version = "3.1" # Specify the rule set version you want to use
+    }
   }
 
-  # set {
-  #   name  = "armAuth.type"
-  #   value = "servicePrincipal"
-  # }
-
-  set {
-    name  = "armAuth.type"
-    value = "aadPodIdentity"
+  tags = {
+    "managed-by-k8s-ingress" = "true"
   }
 
-  set_sensitive {
-    name = "armAuth.identityResourceID"
-    value =  "zzzzxx-eeee-qqqq-9af8-tttteee"
-  }
-
-  set_sensitive {
-    name = "armAuth.identityClientID"
-    value = "/subscriptions/bea4e0c6-4843-4ad8-a7da-26bf10f3ef78/resourcegroups/neat-possum-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/base"
-  }
-
-  # armAuth:
-  #   type: aadPodIdentity
-  #   identityResourceID: /subscriptions/123445-4843-4ad8-a7da-1234566/resourceGroups/MyResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/appgwContrIdentityf37c
-  #   identityClientID:  yyyyy-xxxx-4a7f-92ba-uuuu
-
-
-
-  # set_sensitive {
-  #   name  = "armAuth.secretJSON"
-  #   value = "ewovudxxxxxxxxxbmV0LyIKfQo="
-  # }
-
-  set {
-    name  = "rbac.enabled"
-    value = "true"
-  }
+  # Depends on clause handled automatically by Terraform's dependency graph
 }
 
 
-# # Manifest stuff 
-# resource "kubernetes_deployment" "nginx_helloworld" {
-#   metadata {
-#     name = "nginx-helloworld"
-#   }
-#   spec {
-#     replicas = 1
-#     selector {
-#       match_labels = {
-#         app = "nginx-helloworld"
-#       }
-#     }
-#     template {
-#       metadata {
-#         labels = {
-#           app = "nginx-helloworld"
-#         }
-#       }
-#       spec {
-#         container {
-#           image = "nginx"
-#           name  = "nginx"
-#           port {
-#             container_port = 80
-#           }
-#         }
-#       }
-#     }
-#   }
+resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
+  name                = local.aksClusterName
+  dns_prefix          = var.aksDnsPrefix
+  # sku_tier            = "Free"
+  location            = azurerm_resource_group.multi_cloud_demo.location
+  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
+  kubernetes_version  = var.kubernetesVersion   ### CHECK and VERIFY. This could be an issue!!
+  oidc_issuer_enabled = true
+  workload_identity_enabled = true
+
+  default_node_pool {
+    name            = "agentpool"
+    node_count      = var.aksAgentCount
+    vm_size         = var.aksAgentVMSize
+    os_disk_size_gb = var.aksAgentOsDiskSizeGB
+    vnet_subnet_id  = azurerm_subnet.kubernetes.id
+  }
+
+  service_principal {
+    client_id     = var.aksServicePrincipalAppId
+    client_secret = var.aksServicePrincipalClientSecret
+  }
+
+  network_profile {
+    network_plugin     = "azure"
+    service_cidr       = var.aksServiceCIDR
+    dns_service_ip     = var.aksDnsServiceIP
+    docker_bridge_cidr = var.aksDockerBridgeCIDR
+  }
+
+  ### Come Back to this one ####
+  role_based_access_control_enabled = false
+}
+
+
+###### Configure Provider #####
+
+provider "kubernetes" {
+  host                   = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.host
+  client_certificate     = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_certificate)
+  client_key             = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_key)
+  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.cluster_ca_certificate)
+}
+
+
+# Create an Azure User Assigned Identity for the workload
+resource "azurerm_user_assigned_identity" "workload_identity" {
+  name                = var.workload_identity
+  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
+  location            = azurerm_resource_group.multi_cloud_demo.location
+}
+
+# Create a Role Assignment for the Azure Identity
+resource "azurerm_role_assignment" "workload_id_role" {
+  scope                = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${azurerm_resource_group.multi_cloud_demo.name}"
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_user_assigned_identity.workload_identity.principal_id
+}
+
+# resource "azuread_application_federated_identity_credential" "workload_identity_federated_identity" {
+#   application_id =  "/applications/${azurerm_user_assigned_identity.workload_identity.id}"
+#   display_name   = "ingress-appgw-fedarated-identity"
+#   description    = "needed to dynamically update the app-gw backend pool config to integrate into k8s cluster"
+#   audiences      = ["api://AzureADTokenExchange"]
+#   issuer         = azurerm_kubernetes_cluster.multi_cloud_demo_aks.oidc_issuer_url
+#   subject        = "system:serviceaccount:default:ingress-azure"
 # }
 
-# resource "kubernetes_service" "nginx_helloworld_service" {
+# # # create a servcie account in our k8s cluster for the workload identity
+# resource "kubernetes_service_account" "workload_sa" {
 #   metadata {
-#     name = "nginx-helloworld-service"
-#   }
-#   spec {
-#     selector = {
-#       app = "nginx-helloworld"
-#     }
-#     port {
-#       port        = 80
-#       target_port = 80
-#     }
-#     type = "ClusterIP"
-#   }
-# }
-
-
-
-# resource "kubernetes_ingress_v1" "nginx_helloworld_ingress" {
-#   metadata {
-#     name = "nginx-helloworld-ingress"
-#     namespace = "default"
-#     # hardcoded cause we know that ACID brings in this name
+#     name        = "workload-sa"
+#     namespace   = "default"
 #     annotations = {
-#       "kubernetes.io/ingress.class" = "azure-application-gateway"
-
+#       "azure.workload.identity/client-id" = azurerm_user_assigned_identity.workload_identity.client_id
+#     }
+#     labels = {
+#       "azure.workload.identity/use" = "true"
 #     }
 #   }
-#   spec {
-#     ingress_class_name = "azure-application-gateway"
-#     rule {
-#       http {
-#         path {
-#           path = "/"
-#           path_type = "Prefix"
-#           backend {
-#             service {
-#               name = kubernetes_service.nginx_helloworld_service.metadata[0].name
-#               port {
-#                 number = 80
-#               }
-#             }
-#           }
-#         }
-#       }
-#     }
+# }
+
+# # HELM stuff 
+# provider "helm" {
+#   kubernetes {
+#     host                   = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.host
+#     client_certificate     = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_certificate)
+#     client_key             = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_key)
+#     cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.cluster_ca_certificate)
 #   }
 # }
 
 
 
+# resource "helm_release" "agic" {
+#   name       = "agic"
+#   repository = "https://appgwingress.blob.core.windows.net/ingress-azure-helm-package/"
+#   chart      = "ingress-azure"
+#   version    = "1.7.2"
+#   namespace = "kube-system"
 
+#   set {
+#     name  = "appgw.resourceGroup"
+#     value = azurerm_resource_group.multi_cloud_demo.name
+#   }
 
+#   set {
+#     name  = "appgw.name"
+#     value = azurerm_application_gateway.aks_appgw.name
+#   }
 
+#   set {
+#     name  = "armAuth.type"
+#     value = "workloadIdentity"
+#   }
 
+#   set_sensitive {
+#     name = "armAuth.identityClientID"
+#     value = azurerm_user_assigned_identity.workload_identity.client_id
+#   }
 
-
-
-
-# resource "kubernetes_manifest" "ingress_class_azure_appgw" {
-#   manifest = {
-#     apiVersion = "networking.k8s.io/v1"
-#     kind       = "IngressClass"
-#     metadata = {
-#       name = "azure-application-gateway"
-#     }
-#     spec = {
-#       controller = "azure/application-gateway"
-#     }
+#   set {
+#     name  = "rbac.enabled"
+#     value = "false"
 #   }
 # }
-
