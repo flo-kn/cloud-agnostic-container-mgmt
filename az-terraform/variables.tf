@@ -1,3 +1,14 @@
+variable "environmentPrefix" {
+  type = string
+  description = "A prefix used for naming resources to ensure uniqueness"
+  default = "dev" # Default value; can be overridden
+}
+
+variable "location" {
+  description = "the azure region. Pick yours from the list: https://azure.microsoft.com/en-us/explore/global-infrastructure/geographies/#choose-your-region"
+  type        = string
+} 
+
 variable "aksServicePrincipalAppId" {
   description = "appId of the service principal. Used by AKS to manage AKS related resources on Azure like VMs, subnets."
   type        = string

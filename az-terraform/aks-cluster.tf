@@ -7,7 +7,7 @@ data "azurerm_subscription" "current" {}
 
 resource "azurerm_resource_group" "multi_cloud_demo" {
   name     = "multi-cloud-demo-rg"
-  location = "Germany West Central"
+  location = var.location
 
   tags = {
     environment = "MultiCloudHelloWorld"
@@ -171,85 +171,176 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.cluster_ca_certificate)
 }
 
+# HELM stuff 
+provider "helm" {
+  kubernetes {
+    host                   = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.host
+    client_certificate     = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_certificate)
+    client_key             = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_key)
+    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.cluster_ca_certificate)
+  }
+}
 
-# Create an Azure User Assigned Identity for the workload
+# # Create an Azure User Assigned Identity for the workload
 resource "azurerm_user_assigned_identity" "workload_identity" {
   name                = var.workload_identity
   resource_group_name = azurerm_resource_group.multi_cloud_demo.name
   location            = azurerm_resource_group.multi_cloud_demo.location
 }
 
-# Create a Role Assignment for the Azure Identity
+# # Create a Role Assignment for the Azure Identity
 resource "azurerm_role_assignment" "workload_id_role" {
   scope                = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${azurerm_resource_group.multi_cloud_demo.name}"
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.workload_identity.principal_id
 }
 
-# resource "azuread_application_federated_identity_credential" "workload_identity_federated_identity" {
-#   application_id =  "/applications/${azurerm_user_assigned_identity.workload_identity.id}"
-#   display_name   = "ingress-appgw-fedarated-identity"
-#   description    = "needed to dynamically update the app-gw backend pool config to integrate into k8s cluster"
-#   audiences      = ["api://AzureADTokenExchange"]
-#   issuer         = azurerm_kubernetes_cluster.multi_cloud_demo_aks.oidc_issuer_url
-#   subject        = "system:serviceaccount:default:ingress-azure"
-# }
+# # create a servcie account in our k8s cluster for the workload identity
+# Is this really needed still. Comes with AGIC Helm Chart I thing
+resource "kubernetes_service_account" "workload_sa" {
+  metadata {
+    name        = "workload-sa"
+    namespace   = "kube-system"
+    annotations = {
+      "azure.workload.identity/client-id" = azurerm_user_assigned_identity.workload_identity.client_id
+    }
+    labels = {
+      "azure.workload.identity/use" = "true"
+    }
+  }
+}
 
-# # # create a servcie account in our k8s cluster for the workload identity
-# resource "kubernetes_service_account" "workload_sa" {
-#   metadata {
-#     name        = "workload-sa"
-#     namespace   = "default"
-#     annotations = {
-#       "azure.workload.identity/client-id" = azurerm_user_assigned_identity.workload_identity.client_id
-#     }
-#     labels = {
-#       "azure.workload.identity/use" = "true"
-#     }
-#   }
-# }
-
-# # HELM stuff 
-# provider "helm" {
-#   kubernetes {
-#     host                   = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.host
-#     client_certificate     = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_certificate)
-#     client_key             = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_key)
-#     cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.cluster_ca_certificate)
-#   }
-# }
+resource "azurerm_federated_identity_credential" "workload_identit_federated_creds" {
+  name                = azurerm_user_assigned_identity.workload_identity.name
+  resource_group_name = azurerm_user_assigned_identity.workload_identity.resource_group_name
+  parent_id           = azurerm_user_assigned_identity.workload_identity.id
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = azurerm_kubernetes_cluster.multi_cloud_demo_aks.oidc_issuer_url
+  subject             = "system:serviceaccount:kube-system:agic-sa-ingress-azure"
+}
 
 
+resource "helm_release" "agic" {
+  name       = "agic"
+  repository = "https://appgwingress.blob.core.windows.net/ingress-azure-helm-package/"
+  chart      = "ingress-azure"
+  version    = "1.7.2"
+  namespace = "kube-system"
 
-# resource "helm_release" "agic" {
-#   name       = "agic"
-#   repository = "https://appgwingress.blob.core.windows.net/ingress-azure-helm-package/"
-#   chart      = "ingress-azure"
-#   version    = "1.7.2"
-#   namespace = "kube-system"
+  set {
+    name  = "appgw.resourceGroup"
+    value = azurerm_resource_group.multi_cloud_demo.name
+  }
 
-#   set {
-#     name  = "appgw.resourceGroup"
-#     value = azurerm_resource_group.multi_cloud_demo.name
-#   }
+  set {
+    name  = "appgw.name"
+    value = azurerm_application_gateway.aks_appgw.name
+  }
 
-#   set {
-#     name  = "appgw.name"
-#     value = azurerm_application_gateway.aks_appgw.name
-#   }
+  set {
+    name  = "armAuth.type"
+    value = "workloadIdentity"
+  }
 
-#   set {
-#     name  = "armAuth.type"
-#     value = "workloadIdentity"
-#   }
+  set_sensitive {
+    name = "armAuth.identityClientID"
+    value = azurerm_user_assigned_identity.workload_identity.client_id
+  }
 
-#   set_sensitive {
-#     name = "armAuth.identityClientID"
-#     value = azurerm_user_assigned_identity.workload_identity.client_id
-#   }
+  set {
+    name  = "rbac.enabled"
+    value = "false"
+  }
+}
 
-#   set {
-#     name  = "rbac.enabled"
-#     value = "false"
-#   }
-# }
+
+
+############# demo app ########
+
+# Manifest stuff 
+
+resource "kubernetes_deployment" "nginx" {
+  metadata {
+    name = "nginx-deployment"
+    labels = {
+      app = "nginx"
+    }
+  }
+
+  spec {
+    replicas = 1
+    selector {
+      match_labels = {
+        app = "nginx"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "nginx"
+        }
+      }
+
+      spec {
+        container {
+          image = "nginx:latest"
+          name  = "nginx"
+          port {
+            container_port = 80
+          }
+        }
+      }
+    }
+  }
+}
+
+
+resource "kubernetes_service" "nginx" {
+  metadata {
+    name = "nginx-service"
+  }
+
+  spec {
+    selector = {
+      app = "nginx"
+    }
+
+    port {
+      port        = 80
+      target_port = 80
+    }
+
+    type = "ClusterIP"
+  }
+}
+
+resource "kubernetes_ingress_v1" "nginx" {
+  metadata {
+    name = "nginx-ingress"
+    annotations = {
+      "kubernetes.io/ingress.class" = "azure/application-gateway"
+    }
+  }
+
+  spec {
+    ingress_class_name = "azure-application-gateway"
+    rule {
+      http {
+        path {
+          path = "/"
+          backend {
+            service {
+              name = kubernetes_service.nginx.metadata[0].name
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+

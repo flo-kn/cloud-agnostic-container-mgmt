@@ -1,14 +1,17 @@
 locals {
-  // Assuming you have a way to generate a similar GUID in Terraform or pass it as a variable.
-  resgpguid = substr(replace(uuid(), "-", ""), 0, 4)
+  environmentPrefix = var.environmentPrefix // "dev", "test", or "prod"
   
-  vnetName = "virtualnetwork${local.resgpguid}"
-  applicationGatewayName = "applicationgateway${local.resgpguid}"
-  identityName = "appgwContrIdentity${local.resgpguid}"
-  applicationGatewayPublicIpName = "appgwpublicip${local.resgpguid}"
+  vnetName = "virtualnetwork${local.environmentPrefix}"
+  applicationGatewayName = "applicationgateway${local.environmentPrefix}"
+  identityName = "appgwContrIdentity${local.environmentPrefix}"
+  applicationGatewayPublicIpName = "appgwpublicip${local.environmentPrefix}"
   kubernetesSubnetName = "kubesubnet"
   applicationGatewaySubnetName = "appgwsubnet"
-  aksClusterName = "aks${local.resgpguid}"
+  aksClusterName = "aks${local.environmentPrefix}"
+
+  aks_service_principal_app_id  = "${var.aksServicePrincipalAppId}"
+  aks_service_principal_password = "${var.aksServicePrincipalClientSecret}"
+  aks_service_principal_object_id = "${var.aksServicePrincipalObjectId}"
   
   // Resource IDs will be constructed using Terraform's resource references.
   vnetId = azurerm_virtual_network.vnet.id

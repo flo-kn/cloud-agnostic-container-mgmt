@@ -26,6 +26,6 @@ output "aks_cluster_name" {
   value = azurerm_kubernetes_cluster.multi_cloud_demo_aks.name
 }
 
-output "aks_cluster_oidc_rul" {
+output "aks_cluster_oidc_url" {
   value = azurerm_kubernetes_cluster.multi_cloud_demo_aks.oidc_issuer_url
 }

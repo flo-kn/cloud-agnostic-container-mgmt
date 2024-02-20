@@ -1,7 +1,7 @@
 # Multi-Cloud - Azure Terraform k8s platform
 
 
-## account Prereques:
+## Account Preques :
 
 order receipt
 Your confirmation number is: 54fb1f15-e4f4-413c-a1b8-71e7412e7803
@@ -18,7 +18,18 @@ Microsoft Entra ID P2 Trial | 1 month term
 
 create Azure Principle
 ```sh
-az ad sp create-for-rbac --name "aks-service-principle" --skip-assignment
+az ad sp create-for-rbac --name "aks-service-principle" -o json > auth.json
+appId=$(jq -r ".appId" auth.json)
+password=$(jq -r ".password" auth.json)
+```
+
+```sh
+objectId=$(az ad sp show --id $appId --query "objectId" -o tsv)
+```
+
+init the project 
+```sh
+terraform init
 ```
 
 Update terraform vars:
@@ -27,12 +38,28 @@ Update your terraform.tfvars file
 ```
 (You can set default values or pass the values in the prompt in when you `terraform apply`)
 
-init the project 
-
 ```sh
-terraform init
+terraform plan -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
 ```
 
+```sh
+terraform apply -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
+```
+
+```sh
+az aks get-credentials --resource-group multi-cloud-demo-rg --name aksdev
+```
+
+Export $workloadIdentity, $resourceGroupName, and $oidcUrl which should all be output of the first pt of the deployment
+
+```sh
+az identity federated-credential create \\
+--name "aks-federated-credentials" \\
+--identity-name $workloadIdentity \\
+--resource-group $resourceGroupName \\
+--issuer "${oidcUrl}" \\n--subject "system:serviceaccount:kube-system:agic-sa-ingress-azure"
+```
+(_As of today we do not any way to deploy federated-credentials for workload identities_)
 
 ## Refs: 
 - https://developer.hashicorp.com/terraform/tutorials/kubernetes/aks
@@ -42,12 +69,12 @@ terraform init
 - https://artifacthub.io/packages/helm/azure-application-gateway-kubernetes-ingress/ingress-azure?modal=values
 - https://www.youtube.com/watch?v=PngRsyHyYQE
 - https://github.com/HoussemDellai/docker-kubernetes-course/tree/main/35_app_gateway_ingress
-- [federated identity with terraform](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_federated_identity_credential)
+- [federated identity with terraform](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/aks_workload_identity)
 - [diagram for workload identity](https://azure.github.io/AKS-DevSecOps-Workshop/modules/Module1/lab-workloadidentity.html)
 - [Adam Kielar - CLI way of running through](https://www.adamkielar.pl/posts/how-to-use-an-azure-ad-workload-identity-on-azure-kubernetes-service/)
 - [Youtube - Adam Kielar - ](https://www.youtube.com/watch?v=vEqvEYEl8EM)
 
-## Trouble shhooting
+## Trouble shooting
 
 Error: Kubernetes cluster unreachable: invalid configuration: no configuration has been provided, try setting KUBERNETES_MASTER environment variable
 terraform init -upgrade 
@@ -65,7 +92,7 @@ Terraform the following:
 - [ ] az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName
 - [ ] oidcUrl="$(az aks show --name $aksClusterName --resource-group $resourceGroupName --query "oidcIssuerProfile.issuerUrl" -o tsv)"
 - [ ] echo $oidcUrl
-- [ ] orkloadIdentity="workload-identity"
+- [ ] workloadIdentity="workload-identity"
 - [ ] az identity create --name $workloadIdentity --resource-group $resourceGroupName
 - [ ] clientId=$(az identity show --name $workloadIdentity --resource-group $resourceGroupName --query clientId -o tsv)
 - [ ] create role assignment
