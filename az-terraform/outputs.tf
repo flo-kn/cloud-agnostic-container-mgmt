@@ -1,9 +1,6 @@
 output "subscription_id" {
   value = data.azurerm_subscription.current.subscription_id
 }
-output "resource_group_name" {
-  value = azurerm_resource_group.multi_cloud_demo.name
-}
 
 output "application_gateway_name" {
   value = azurerm_application_gateway.aks_appgw.name

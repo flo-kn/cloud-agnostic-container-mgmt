@@ -1,7 +1,7 @@
 # Multi-Cloud - Azure Terraform k8s platform
 
 
-## Account Preques :
+## Account Prerequs:
 
 order receipt
 Your confirmation number is: 54fb1f15-e4f4-413c-a1b8-71e7412e7803
@@ -82,6 +82,7 @@ terraform init -upgrade
 
 ToDo:
 Terraform the following:
+- [ ] Configure aws module linter with aws credential  https://github.com/terraform-linters/tflint-ruleset-aws/blob/master/docs/configuration.md
 - [ ] add tags
 - [ ] Check if waf configuration could be optional
 - [ ] Check dockerbridge if it can get removed: docker_bridge_cidr
@@ -135,4 +136,7 @@ Terraform the following:
       --subject "system:serviceaccount:default:ingress-azure"
       ```
       
+
+
+- [ ] This will fail initially:       "kubernetes.io/ingress.class" = "azure/application-gateway". change it to this:       "kubernetes.io/ingress.class" = "azure-application-gateway" and then back
 

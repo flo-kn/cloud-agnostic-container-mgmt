@@ -5,54 +5,35 @@ provider "azurerm" {
 
 data "azurerm_subscription" "current" {}
 
-resource "azurerm_resource_group" "multi_cloud_demo" {
-  name     = "multi-cloud-demo-rg"
-  location = var.location
+module "resource_group" {
+  source = "./modules/resource_group"
+  location = local.location
+}
 
-  tags = {
-    environment = "MultiCloudHelloWorld"
-  }
+module "network" {
+  source = "./modules/network"
+  location = local.location
+  resource_group_name = module.resource_group.resource_group_name
 }
 
 resource "azurerm_user_assigned_identity" "identity" {
   name                = local.identityName
-  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
-  location            = azurerm_resource_group.multi_cloud_demo.location
-}
-
-resource "azurerm_virtual_network" "vnet" {
-  name                = local.vnetName
-  address_space       = [var.virtualNetworkAddressPrefix]
-  location            = azurerm_resource_group.multi_cloud_demo.location
-  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
-}
-
-resource "azurerm_subnet" "kubernetes" {
-  name                 = local.kubernetesSubnetName
-  resource_group_name  = azurerm_resource_group.multi_cloud_demo.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = [var.aksSubnetAddressPrefix]
-}
-
-resource "azurerm_subnet" "aks_appgw" {
-  name                 = local.applicationGatewaySubnetName
-  resource_group_name  = azurerm_resource_group.multi_cloud_demo.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = [var.applicationGatewaySubnetAddressPrefix]
+  resource_group_name = module.resource_group.resource_group_name
+  location            = module.resource_group.resource_group_location
 }
 
 resource "azurerm_public_ip" "appgw_public_ip" {
   name                = local.applicationGatewayPublicIpName
-  location            = azurerm_resource_group.multi_cloud_demo.location
-  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
+  location            = module.resource_group.resource_group_location
+  resource_group_name = module.resource_group.resource_group_name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 
 resource "azurerm_application_gateway" "aks_appgw" {
   name                = local.applicationGatewayName
-  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
-  location            = azurerm_resource_group.multi_cloud_demo.location
+  resource_group_name = module.resource_group.resource_group_name
+  location            = module.resource_group.resource_group_location
 
   sku {
     name     = var.applicationGatewaySku
@@ -62,7 +43,7 @@ resource "azurerm_application_gateway" "aks_appgw" {
 
   gateway_ip_configuration {
     name      = "appGatewayIpConfig"
-    subnet_id = azurerm_subnet.aks_appgw.id # Ensure you have a subnet resource defined for this
+    subnet_id = module.network.subnet_aks_appgw_id
   }
 
   frontend_ip_configuration {
@@ -131,8 +112,8 @@ resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
   name                = local.aksClusterName
   dns_prefix          = var.aksDnsPrefix
   # sku_tier            = "Free"
-  location            = azurerm_resource_group.multi_cloud_demo.location
-  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
+  location            = module.resource_group.resource_group_location
+  resource_group_name = module.resource_group.resource_group_name
   kubernetes_version  = var.kubernetesVersion   ### CHECK and VERIFY. This could be an issue!!
   oidc_issuer_enabled = true
   workload_identity_enabled = true
@@ -142,7 +123,7 @@ resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
     node_count      = var.aksAgentCount
     vm_size         = var.aksAgentVMSize
     os_disk_size_gb = var.aksAgentOsDiskSizeGB
-    vnet_subnet_id  = azurerm_subnet.kubernetes.id
+    vnet_subnet_id  = module.network.subnet_aks_kubernetes_id
   }
 
   service_principal {
@@ -184,13 +165,13 @@ provider "helm" {
 # # Create an Azure User Assigned Identity for the workload
 resource "azurerm_user_assigned_identity" "workload_identity" {
   name                = var.workload_identity
-  resource_group_name = azurerm_resource_group.multi_cloud_demo.name
-  location            = azurerm_resource_group.multi_cloud_demo.location
+  resource_group_name = module.resource_group.resource_group_name
+  location            = module.resource_group.resource_group_location
 }
 
 # # Create a Role Assignment for the Azure Identity
 resource "azurerm_role_assignment" "workload_id_role" {
-  scope                = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${azurerm_resource_group.multi_cloud_demo.name}"
+  scope                = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${module.resource_group.resource_group_name}"
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.workload_identity.principal_id
 }
@@ -229,7 +210,7 @@ resource "helm_release" "agic" {
 
   set {
     name  = "appgw.resourceGroup"
-    value = azurerm_resource_group.multi_cloud_demo.name
+    value = module.resource_group.resource_group_name
   }
 
   set {
