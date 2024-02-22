@@ -94,7 +94,7 @@ resource "azurerm_application_gateway" "aks_appgw" {
   dynamic "waf_configuration" {
     for_each = var.applicationGatewaySku == "WAF_v2" ? [1] : []
     content {
-      enabled          = true
+      enabled          = var.waf_enabled
       firewall_mode    = "Detection"
       rule_set_version = "3.1" # Specify the rule set version you want to use
     }
@@ -106,7 +106,6 @@ resource "azurerm_application_gateway" "aks_appgw" {
 
   # Depends on clause handled automatically by Terraform's dependency graph
 }
-
 
 resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
   name                = local.aksClusterName
@@ -133,9 +132,10 @@ resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
 
   network_profile {
     network_plugin     = "azure"
+    // Make sure to not let this one overlap with subnet CIDR
     service_cidr       = var.aksServiceCIDR
-    dns_service_ip     = var.aksDnsServiceIP
     docker_bridge_cidr = var.aksDockerBridgeCIDR
+    dns_service_ip     = var.aksDnsServiceIP
   }
 
   ### Come Back to this one ####
@@ -200,7 +200,6 @@ resource "azurerm_federated_identity_credential" "workload_identit_federated_cre
   subject             = "system:serviceaccount:kube-system:agic-sa-ingress-azure"
 }
 
-
 resource "helm_release" "agic" {
   name       = "agic"
   repository = "https://appgwingress.blob.core.windows.net/ingress-azure-helm-package/"
@@ -235,93 +234,6 @@ resource "helm_release" "agic" {
 }
 
 
-
-############# demo app ########
-
-# Manifest stuff 
-
-resource "kubernetes_deployment" "nginx" {
-  metadata {
-    name = "nginx-deployment"
-    labels = {
-      app = "nginx"
-    }
-  }
-
-  spec {
-    replicas = 1
-    selector {
-      match_labels = {
-        app = "nginx"
-      }
-    }
-
-    template {
-      metadata {
-        labels = {
-          app = "nginx"
-        }
-      }
-
-      spec {
-        container {
-          image = "nginx:latest"
-          name  = "nginx"
-          port {
-            container_port = 80
-          }
-        }
-      }
-    }
-  }
+module "demo-app" {
+  source = "./modules/demo-app"
 }
-
-
-resource "kubernetes_service" "nginx" {
-  metadata {
-    name = "nginx-service"
-  }
-
-  spec {
-    selector = {
-      app = "nginx"
-    }
-
-    port {
-      port        = 80
-      target_port = 80
-    }
-
-    type = "ClusterIP"
-  }
-}
-
-resource "kubernetes_ingress_v1" "nginx" {
-  metadata {
-    name = "nginx-ingress"
-    annotations = {
-      "kubernetes.io/ingress.class" = "azure/application-gateway"
-    }
-  }
-
-  spec {
-    ingress_class_name = "azure-application-gateway"
-    rule {
-      http {
-        path {
-          path = "/"
-          backend {
-            service {
-              name = kubernetes_service.nginx.metadata[0].name
-              port {
-                number = 80
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-

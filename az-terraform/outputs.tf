@@ -26,3 +26,7 @@ output "aks_cluster_name" {
 output "aks_cluster_oidc_url" {
   value = azurerm_kubernetes_cluster.multi_cloud_demo_aks.oidc_issuer_url
 }
+
+output "demo_app_public_ip_address" {
+  value = "http://${azurerm_public_ip.appgw_public_ip.ip_address}"
+}

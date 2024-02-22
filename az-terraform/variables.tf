@@ -1,5 +1,5 @@
 variable "location" {
-  description = "the azure region. Pick yours from the list: https://azure.microsoft.com/en-us/explore/global-infrastructure/geographies/#choose-your-region"
+  description = "The azure region. Pick yours from the list: https://azure.microsoft.com/en-us/explore/global-infrastructure/geographies/#choose-your-region"
   type        = string
 } 
 variable "aksServicePrincipalAppId" {
@@ -13,7 +13,6 @@ variable "environmentPrefix" {
   default = "dev" # Default value; can be overridden
 }
 
-
 variable "aksServicePrincipalClientSecret" {
   description = "Password for the service principal. Used by AKS to manage Azure."
   type        = string
@@ -24,9 +23,6 @@ variable "aksServicePrincipalObjectId" {
   description = "objectId of the service principal."
   type        = string
 }
-
-
-
 
 variable "aksDnsPrefix" {
   description = "Optional DNS prefix to use with hosted Kubernetes API server FQDN."
@@ -47,7 +43,7 @@ variable "aksAgentCount" {
 }
 
 variable "aksAgentVMSize" {
-  description = "The size of the Virtual Machine."
+  description = "The size of the virtual machine(s)."
   type        = string
   default     = "Standard_D3_v2"
 }
@@ -55,11 +51,11 @@ variable "aksAgentVMSize" {
 variable "kubernetesVersion" {
   description = "The version of Kubernetes."
   type        = string
-  default     = "1.23.3"
+  default     = "1.27.7"
 }
 
 variable "aksServiceCIDR" {
-  description = "A CIDR notation IP range from which to assign service cluster IPs."
+  description = "A CIDR notation IP range from which to assign service cluster IPs. Make sure to not overlap"
   type        = string
   default     = "10.2.0.0/16"
 }
@@ -88,9 +84,14 @@ variable "applicationGatewaySku" {
   default     = "WAF_v2"
 }
 
+variable "waf_enabled" {
+  description = "Option to enable a WAF (Web Application Firewall) in front of the Application Gateway"
+  type        = bool
+  default     = false
+}
 
 variable "workload_identity" {
-  description = "workload Id of the pod responsibel for configuring the the Application Gateway"
+  description = "Workload Id of the pod responsibel for configuring the the Application Gateway"
   type        = string
   default     = "azure_ingress_workload_identity"
 }
