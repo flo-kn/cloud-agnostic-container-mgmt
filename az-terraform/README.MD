@@ -1,10 +1,14 @@
 # Multi-Cloud - Azure Terraform k8s platform
 
-## Account Prerequs:
+## Prerequs:
 
 - A fully fledged Azure subscription (You user needs to be able to provision resources such as vnets, aks, app registrations, app gateway)
 - A license set named ["Microsoft Entra ID P2"](https://www.microsoft.com/en-us/security/business/microsoft-entra-pricing?market=de). As of today 23.02.21, you can easily book a 1 month term 100 licenses
 
+## Dependencies
+
+- Terraform
+- linting tool: tflint -> `brew install tflint`
 
 ## Getting started
 
@@ -39,91 +43,76 @@
     terraform apply -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
     ```
 
+    ```
+      Enter a value: yes
+
+    module.demo-app.kubernetes_ingress_v1.nginx: Modifying... [id=default/nginx-ingress]
+    module.demo-app.kubernetes_ingress_v1.nginx: Modifications complete after 0s [id=default/nginx-ingress]
+
+    Apply complete! Resources: 0 added, 1 changed, 0 destroyed.
+
+    Outputs:
+
+    ...
+    demo_app_public_ip_address = "http://4.185.77.79"
+    ...
+
+    ```
+    Click on the IP and allow your browser to open the website.
+
+    ![](./images/browser-nginx.png)
+
+    Congrats! 🥳 You successfully deployed Hello World WebApp to an Azure AKS K8s Cluster exposed via AGIC enabled Azure Application Gateway
+
+
 6. Update you kube-config in order to interact with the k8s cluster:
     ```sh
     az aks get-credentials --resource-group multi-cloud-demo-rg --name aksdev
     ```
 
+## Linting
+
+```sh
+tfling
+```
+
 
 ## Refs: 
-- https://developer.hashicorp.com/terraform/tutorials/kubernetes/aks
-- https://github.com/Azure/application-gateway-kubernetes-ingress/blob/master/docs/setup/install-new.md
-- https://learn.microsoft.com/en-us/azure/aks/use-managed-identity?source=recommendations
-- https://github.com/Azure/application-gateway-kubernetes-ingress
-- https://artifacthub.io/packages/helm/azure-application-gateway-kubernetes-ingress/ingress-azure?modal=values
-- https://www.youtube.com/watch?v=PngRsyHyYQE
-- https://github.com/HoussemDellai/docker-kubernetes-course/tree/main/35_app_gateway_ingress
+- [Terraform Official - kubernetes](https://developer.hashicorp.com/terraform/tutorials/kubernetes/aks)
+- [Azure Application Gateway](https://github.com/Azure/application-gateway-kubernetes-ingress/blob/master/docs/setup/install-new.md)
+- [AKS managed identity in Azure Kubernetes Service ](https://learn.microsoft.com/en-us/azure/aks/use-managed-identity?source=recommendations)
+- [Github - AGIC](https://github.com/Azure/application-gateway-kubernetes-ingress)
+- [Ingress Azure Values](https://artifacthub.io/packages/helm/azure-application-gateway-kubernetes-ingress/ingress-azure?modal=values)
+- [Youtube - Houssem Dellai](https://www.youtube.com/watch?v=PngRsyHyYQE)
+- [Github - Installation Walkthrough from Houssem Dellai: Azure Application Gateway as Ingress Controller for AKS](https://github.com/HoussemDellai/docker-kubernetes-course/tree/main/35_app_gateway_ingress)
 - [federated identity with terraform](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/aks_workload_identity)
-- [diagram for workload identity](https://azure.github.io/AKS-DevSecOps-Workshop/modules/Module1/lab-workloadidentity.html)
+- [Diagram for workload identity](https://azure.github.io/AKS-DevSecOps-Workshop/modules/Module1/lab-workloadidentity.html)
 - [Adam Kielar - CLI way of running through](https://www.adamkielar.pl/posts/how-to-use-an-azure-ad-workload-identity-on-azure-kubernetes-service/)
-- [Youtube - Adam Kielar - ](https://www.youtube.com/watch?v=vEqvEYEl8EM)
+- [Youtube - Adam Kielar](https://www.youtube.com/watch?v=vEqvEYEl8EM)
 
-## Trouble shooting
+## Troubleshooting
 
-Error: Kubernetes cluster unreachable: invalid configuration: no configuration has been provided, try setting KUBERNETES_MASTER environment variable
-terraform init -upgrade 
+- Error: `Kubernetes cluster unreachable: invalid configuration: no configuration has been provided, try setting KUBERNETES_MASTER environment variable``
+  
+  Fix: `terraform init -upgrade`
 
 
-ToDo:
+## Left-To-Dos:
 Terraform the following:
 - [ ] Configure aws module linter with aws credential  https://github.com/terraform-linters/tflint-ruleset-aws/blob/master/docs/configuration.md
-- [ ] add tags
-- [ ] Check if waf configuration could be optional
-- [ ] Check dockerbridge if it can get removed: docker_bridge_cidr
-- [ ] Add option to make RBAC true for the example
-- [ ] IP Range von /8 auf mindestens /16 verringern
-- [ ] aksClusterName=aks70f7
-- [ ] resourceGroupName=helloWorldResourceGroup
-- [ ] az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName
-- [ ] oidcUrl="$(az aks show --name $aksClusterName --resource-group $resourceGroupName --query "oidcIssuerProfile.issuerUrl" -o tsv)"
-- [ ] echo $oidcUrl
-- [ ] workloadIdentity="workload-identity"
-- [ ] az identity create --name $workloadIdentity --resource-group $resourceGroupName
-- [ ] clientId=$(az identity show --name $workloadIdentity --resource-group $resourceGroupName --query clientId -o tsv)
-- [ ] create role assignment
-      ``` 
-      az role assignment create \
-      --assignee $clientId \
-      --role 'Contributor' \
-      --scope /subscriptions/bea4e0c6-4843-4ad8-a7da-26bf10f3ef78/resourceGroups/$resourceGroupName
+- [ ] Add tags
+- [x] Check if WAF configuration could be optional
+- [ ] Find a way to use Application Gateway `docker_bridge_cidr`
+- [ ] Add option to enable RBAC 
+- [ ] Move tf state to azure storage account
+- [ ] This will fail initially: 
       ```
-
-- [ ] code sa.yaml
-      ```yaml
-      apiVersion: v1
-      kind: ServiceAccount
-      metadata:
-        annotations:
-          azure.workload.identity/client-id: 08084f07-a23a-4bbf-90e3-847bacefcb55
-        labels:
-          azure.workload.identity/use: "true"
-        name: workload-sa
-        namespace: default
+      "kubernetes.io/ingress.class" = "azure/application-gateway"
       ```
-- [ ] kubectl apply -f sa.yaml
-- [ ] helm repo add application-gateway-kubernetes-ingress https://appgwingress.blob.core.windows.net/ingress-azure-helm-package/
-- [ ] helm repo update
-- [ ] Install
+      Change it to this:       
       ```
-      helm install ingress-azure \
-        -f helm-config.yaml \
-        application-gateway-kubernetes-ingress/ingress-azure \
-        --version 1.7.2
+      "kubernetes.io/ingress.class" = "azure-application-gateway"
       ```
-- [ ] create federated identity
-      ```
-      az identity federated-credential create \
-      --name "aks-federated-credential" \
-      --identity-name $workloadIdentity \
-      --resource-group $resourceGroupName \
-      --issuer "${oidcUrl}" \
-      --subject "system:serviceaccount:default:ingress-azure"
-      ```
-- [ ] move tf state to azure storage account
-      
-
-
-- [ ] This will fail initially:       "kubernetes.io/ingress.class" = "azure/application-gateway". change it to this:       "kubernetes.io/ingress.class" = "azure-application-gateway" and then back
-
+      and then back
 - [ ] Make some automated deployments with e.g. ARGO CD, GH Actions
 

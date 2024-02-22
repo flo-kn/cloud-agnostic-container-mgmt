@@ -15,7 +15,7 @@ output "identity_client_id" {
 }
 
 output "aks_api_server_address" {
-  value = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.host
+  value = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].host
   sensitive = true
 }
 

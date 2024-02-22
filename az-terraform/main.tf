@@ -139,26 +139,26 @@ resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
   }
 
   ### Come Back to this one ####
-  role_based_access_control_enabled = false
+  role_based_access_control_enabled = var.aksEnableRBAC
 }
 
 
 ###### Configure Provider #####
 
 provider "kubernetes" {
-  host                   = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.host
-  client_certificate     = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_certificate)
-  client_key             = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_key)
-  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.cluster_ca_certificate)
+  host                   = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].host
+  client_certificate     = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].client_certificate)
+  client_key             = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].client_key)
+  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].cluster_ca_certificate)
 }
 
 # HELM stuff 
 provider "helm" {
   kubernetes {
-    host                   = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.host
-    client_certificate     = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_certificate)
-    client_key             = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.client_key)
-    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config.0.cluster_ca_certificate)
+    host                   = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].host
+    client_certificate     = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].client_certificate)
+    client_key             = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].client_key)
+    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].cluster_ca_certificate)
   }
 }
 
@@ -178,18 +178,18 @@ resource "azurerm_role_assignment" "workload_id_role" {
 
 # # create a servcie account in our k8s cluster for the workload identity
 # Is this really needed still. Comes with AGIC Helm Chart I thing
-resource "kubernetes_service_account" "workload_sa" {
-  metadata {
-    name        = "workload-sa"
-    namespace   = "kube-system"
-    annotations = {
-      "azure.workload.identity/client-id" = azurerm_user_assigned_identity.workload_identity.client_id
-    }
-    labels = {
-      "azure.workload.identity/use" = "true"
-    }
-  }
-}
+# resource "kubernetes_service_account" "workload_sa" {
+#   metadata {
+#     name        = "workload-sa"
+#     namespace   = "kube-system"
+#     annotations = {
+#       "azure.workload.identity/client-id" = azurerm_user_assigned_identity.workload_identity.client_id
+#     }
+#     labels = {
+#       "azure.workload.identity/use" = "true"
+#     }
+#   }
+# }
 
 resource "azurerm_federated_identity_credential" "workload_identit_federated_creds" {
   name                = azurerm_user_assigned_identity.workload_identity.name
