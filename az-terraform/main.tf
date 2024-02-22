@@ -110,7 +110,7 @@ resource "azurerm_application_gateway" "aks_appgw" {
 resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
   name                = local.aksClusterName
   dns_prefix          = var.aksDnsPrefix
-  # sku_tier            = "Free"
+  sku_tier            = "Free"
   location            = module.resource_group.resource_group_location
   resource_group_name = module.resource_group.resource_group_name
   kubernetes_version  = var.kubernetesVersion   ### CHECK and VERIFY. This could be an issue!!
