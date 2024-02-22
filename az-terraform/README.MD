@@ -92,7 +92,7 @@ tfling
 
 ## Troubleshooting
 
-- Error: `Kubernetes cluster unreachable: invalid configuration: no configuration has been provided, try setting KUBERNETES_MASTER environment variable``
+- Error: `Kubernetes cluster unreachable: invalid configuration: no configuration has been provided, try setting KUBERNETES_MASTER environment variable`
   
   Fix: `terraform init -upgrade`
 
