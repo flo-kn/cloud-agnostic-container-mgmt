@@ -104,7 +104,6 @@ resource "azurerm_application_gateway" "aks_appgw" {
     "managed-by-k8s-ingress" = "true"
   }
 
-  # Depends on clause handled automatically by Terraform's dependency graph
 }
 
 resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
@@ -113,7 +112,7 @@ resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
   sku_tier            = "Free"
   location            = module.resource_group.resource_group_location
   resource_group_name = module.resource_group.resource_group_name
-  kubernetes_version  = var.kubernetesVersion   ### CHECK and VERIFY. This could be an issue!!
+  kubernetes_version  = var.kubernetesVersion
   oidc_issuer_enabled = true
   workload_identity_enabled = true
 
@@ -176,21 +175,6 @@ resource "azurerm_role_assignment" "workload_id_role" {
   principal_id         = azurerm_user_assigned_identity.workload_identity.principal_id
 }
 
-# # create a servcie account in our k8s cluster for the workload identity
-# Is this really needed still. Comes with AGIC Helm Chart I thing
-# resource "kubernetes_service_account" "workload_sa" {
-#   metadata {
-#     name        = "workload-sa"
-#     namespace   = "kube-system"
-#     annotations = {
-#       "azure.workload.identity/client-id" = azurerm_user_assigned_identity.workload_identity.client_id
-#     }
-#     labels = {
-#       "azure.workload.identity/use" = "true"
-#     }
-#   }
-# }
-
 resource "azurerm_federated_identity_credential" "workload_identit_federated_creds" {
   name                = azurerm_user_assigned_identity.workload_identity.name
   resource_group_name = azurerm_user_assigned_identity.workload_identity.resource_group_name
@@ -232,7 +216,6 @@ resource "helm_release" "agic" {
     value = "false"
   }
 }
-
 
 module "demo-app" {
   source = "./modules/demo-app"

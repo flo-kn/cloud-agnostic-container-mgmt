@@ -1,17 +1,23 @@
+# Multi-Cloud - Azure Terraform k8s platform
 
-## Getting Started
-
-Prerequs:
+## Prerequs:
 
 - Some Pulumi KnowHow
 - Basic Typescript Node Knowledge
 - An AWS account with AdministratorAccess or similar permissionSet
 - AWS knowledge, alternative knowledge in some other hyperscaler (Azure, GCP) should be sufficient
 
-Dependencies:
+## Dependencies
+
 - [Pulumi](https://www.pulumi.com/docs/install/)
 - [yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
 - [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+
+
+
+
+## Getting started
+
 
 ### Login to Cloud account (AWS):
 
@@ -27,7 +33,7 @@ Choose a name for your [Pulumi Backend](https://www.pulumi.com/docs/intro/concep
 export PULUMI_BACKEND=<your-pulumi-backend-name>
 ```
 
-...and create the s3 bucket holding later holding the remote state of the IAC project by doing the following. Only execute this command once at inital setup of the project:
+...and create the s3 bucket holding later holding the remote state of the IAC project by doing the following. Only execute this command once at initial setup of the project:
 
 ```sh
 aws s3 mb s3://$PULUMI_BACKEND
@@ -38,6 +44,7 @@ Login to Pulumi Backend:
 ```sh
 pulumi login s3://$PULUMI_BACKEND
 ```
+
 
 ### Build the project using [yarn](https://classic.yarnpkg.com/en/):
 ```sh 
@@ -205,3 +212,9 @@ Get the logs. Note additional param `-c aws-eks-nodeagent`. It will in some case
 ```
 kubectl logs aws-node-jwwpd -n kube-system -c aws-eks-nodeagent
 ```
+
+
+## Refs: 
+
+
+## Left-To-Dos:
