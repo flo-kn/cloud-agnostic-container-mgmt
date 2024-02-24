@@ -93,7 +93,7 @@ export const createAppDeploymentManifest = async (
             http: {
               paths: [
                 {
-                  path: "/*",
+                  path: "/",
                   pathType: "Prefix",
                   backend: {
                     service: {

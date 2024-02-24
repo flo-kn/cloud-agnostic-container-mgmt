@@ -1,7 +1,7 @@
 import { IHelloWorldOnEksConfigs, IInfrastructureConfigs } from "../types";
 import { createK8sCluster } from "./eks-cluster";
 import { createNamespaces } from "./namespaces";
-import { addAwsLoadBalancerController, addExternalDnsPlugin } from "./plugins";
+import { addAwsLoadBalancerController, addExternalDnsPlugin } from "./k8s-plugins";
 import { createVPC as createVpc } from "./vpc";
 
 /**
@@ -33,15 +33,15 @@ export const createKubernetesContainerPlatform = (
   //   resourceConfigs?.externalDNS,
   // );
 
-  // const k8sNamespaces = createNamespaces(
-  //   eksCluster.roleProvider,
-  //   clusterConfigs.namespace,
-  // );
+  const k8sNamespaces = createNamespaces(
+    eksCluster.roleProvider,
+    clusterConfigs.namespace,
+  );
 
   return {
     vpc,
     cluster: eksCluster.cluster,
-    // helloworldNamespace: k8sNamespaces.namespace,
+    helloworldNamespace: k8sNamespaces.namespace,
     eksRoleProvider: eksCluster.roleProvider,
   };
 };

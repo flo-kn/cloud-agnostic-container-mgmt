@@ -56,6 +56,30 @@ export const addAwsLoadBalancerController = (
     },
   );
 
+  const elbTaggingPolicy = new aws.iam.Policy("elbTaggingPolicy", {
+    description: "Policy to allow ELB tagging by the Load Balancer Controller",
+    policy: JSON.stringify({
+      Version: "2012-10-17",
+      Statement: [
+        {
+          Action: "elasticloadbalancing:AddTags",
+          Resource: "*",
+          Effect: "Allow",
+        },
+        // Include other necessary actions here
+      ],
+    }),
+  });
+  
+  const policyAttachment2 = new aws.iam.PolicyAttachment(
+    "aws-load-balancer-controller-attachment-2",
+    {
+      policyArn: elbTaggingPolicy.arn,
+      roles: [loadBalancerRole],
+    },
+  );
+  
+
   // // Define the ClusterRole
   // const clusterRole = new k8s.rbac.v1.ClusterRole(
   //   "aws-lb-controller-policy-endpoints",

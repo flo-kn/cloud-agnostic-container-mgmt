@@ -2,22 +2,19 @@
 
 ## Prerequs:
 
-- Some Pulumi KnowHow
+- Some Pulumi KnowHow or at least Infrastructure-As-Code Knowhow
 - Basic Typescript Node Knowledge
 - An AWS account with AdministratorAccess or similar permissionSet
 - AWS knowledge, alternative knowledge in some other hyperscaler (Azure, GCP) should be sufficient
 
 ## Dependencies
 
-- [Pulumi](https://www.pulumi.com/docs/install/)
+- [Pulumi v3.107.0](https://www.pulumi.com/docs/install/)
 - [yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
 - [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 
 
-
-
 ## Getting started
-
 
 ### Login to Cloud account (AWS):
 
@@ -206,6 +203,13 @@ pulumi up
 _(will deploy all infrastructure needed to host the static content and sync the content in the local `./public` folder with the s3 bucket.)_
 
 
+### Interact with the cluster
+
+Update the kubeconfig
+```sh
+aws eks update-kubeconfig --name helloworld
+```
+
 ### Troubleshooting 
 
 Get the logs. Note additional param `-c aws-eks-nodeagent`. It will in some cases give more insights into reasons why pods are failing
@@ -213,8 +217,21 @@ Get the logs. Note additional param `-c aws-eks-nodeagent`. It will in some case
 kubectl logs aws-node-jwwpd -n kube-system -c aws-eks-nodeagent
 ```
 
+## Make it prettier
+
+Prettier auto-formatting of your TS Code
+
+- [This youtube video for prettier config](https://www.youtube.com/watch?v=11jpa8e5jEQ)
+- [Github Repo for the video](https://github.com/JoshuaKGoldberg/create-typescript-app/blob/main/.vscode/settings.json)
+- [nginx from docker hub will host our demo app](https://hub.docker.com/_/nginx)
+
 
 ## Refs: 
 
+- Some props to [OpenAIs ChatGPT](https://chat.openai.com/) [Plus version](https://openai.com/chatgpt/pricing) which does a quite job at providing pulumi TS code snippets
 
 ## Left-To-Dos:
+
+- [ ] Probably many
+- [ ] automate deployment using GH Actions
+- [ ] Enable external DNS

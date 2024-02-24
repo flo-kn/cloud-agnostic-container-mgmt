@@ -94,7 +94,7 @@ export interface IPublicDnsConfig {
 export interface IInfrastructureConfigs {
   vpc: awsx.ec2.Vpc;
   cluster: eks.Cluster;
-  helloworldNamespace?: k8s.core.v1.Namespace;
+  helloworldNamespace: k8s.core.v1.Namespace;
   eksRoleProvider: k8s.Provider;
 }
 

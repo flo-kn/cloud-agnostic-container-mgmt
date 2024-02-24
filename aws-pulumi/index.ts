@@ -4,6 +4,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
 import { createKubernetesContainerPlatform } from "./src/kubernetes-platform-infra/kubernetes-platform-infra";
 import { registerAutoTags } from "./src/tags/autotag";
+import { createAppDeploymentManifest } from "./src/application/app-deployment-manifest"
 
 import { tags } from "./src/tags/tags";
 import { IPulumiConfigs } from "./src/types";
@@ -32,31 +33,26 @@ const hostedZone = new aws.route53.Zone("dns-hosted-zone", {
   delegationSetId: delegationSet.id,
 });
 
-// const containerPlatform = createKubernetesContainerPlatform({
-//   infrastructure: {
-//     props: pulumiConfigs,
-//     awsHostedZoneId: hostedZone.zoneId,
-//   },
-// });
-
+const containerPlatform = createKubernetesContainerPlatform({
+  infrastructure: {
+    props: pulumiConfigs,
+    awsHostedZoneId: hostedZone.zoneId,
+  },
+});
 
 
 // Demo Application Stuff
 
-// const appName = "helloworld-app";
+const appName = "helloworld-app";
 
-// // Define the Nginx helloworld deployment via k8s manifest
-// const appDeploymentManifest = createAppDeploymentManifest(
-//   appName,
-//   containerPlatform.helloworldNamespace,
-//   containerPlatform.eksRoleProvider,
-// );
+// Define the Nginx helloworld deployment via k8s manifest
+const appDeploymentManifest = createAppDeploymentManifest(
+  appName,
+  containerPlatform.helloworldNamespace,
+  containerPlatform.eksRoleProvider,
+);
 
-// export const ipAddress = appDeploymentManifest;
-// export const k8sClusterName = containerPlatform.cluster.eksCluster.name
-// export const kubeconfig = containerPlatform.cluster.kubeconfig
-// export const clusterOidcProvider = containerPlatform.cluster.core.oidcProvider?.url
-// export const clusterOidcProviderArn = containerPlatform.cluster.core.oidcProvider?.arn
-
-// export const clusterRoleName = clusterRole.metadata.name;
-// export const clusterRoleBindingName = clusterRoleBinding.metadata.name;
+export const ipAddress = appDeploymentManifest;
+export const k8sClusterName = containerPlatform.cluster.eksCluster.name
+export const clusterOidcProvider = containerPlatform.cluster.core.oidcProvider?.url
+export const clusterOidcProviderArn = containerPlatform.cluster.core.oidcProvider?.arn

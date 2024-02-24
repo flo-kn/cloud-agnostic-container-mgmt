@@ -64,11 +64,11 @@ export const createK8sCluster = (
     },
     roleMappings: [
       // // This will map to the deployment role from github actions
-      // {
-      //   groups: ["system:masters"],
-      //   roleArn: eksClusterRole.arn,
-      //   username: "pulumi:admin-user",
-      // },
+      {
+        groups: ["system:masters"],
+        roleArn: eksClusterRole.arn,
+        username: "pulumi:admin-user",
+      },
       // Make sure the sso admin role can also have access to the cluster for manual kubectl commands
       {
         groups: ["system:masters"],
@@ -77,73 +77,9 @@ export const createK8sCluster = (
       },
     ],
     createOidcProvider: true,
-    version: "1.28",
+    version: "1.28", //1.29
   });
 
-  const clusterOidcProviderUrl = cluster.core.oidcProvider?.arn;
-  const clusterOidcProviderArn = cluster.core.oidcProvider?.arn;
-
-  // const awsNodeRole = new aws.iam.Role("awsNodeRole", {
-  //   assumeRolePolicy: pulumi
-  //     .all([clusterOidcProviderArn, clusterOidcProviderUrl])
-  //     .apply(([arn, url]) =>
-  //       JSON.stringify({
-  //         Version: "2012-10-17",
-  //         Statement: [
-  //           {
-  //             Effect: "Allow",
-  //             Principal: {
-  //               Federated: arn,
-  //             },
-  //             Action: "sts:AssumeRoleWithWebIdentity",
-  //             Condition: {
-  //               StringEquals: {
-  //                 [`${url}:sub`]: "system:serviceaccount:kube-system:aws-node",
-  //               },
-  //             },
-  //           },
-  //         ],
-  //       }),
-  //     ),
-  //   // ... other role properties ...
-  // });
-
-  // const awsNodePolicy = new aws.iam.Policy("awsNodePolicy", {
-  //   policy: JSON.stringify({
-  //     Version: "2012-10-17",
-  //     Statement: [
-  //       {
-  //         Action: ["iam:AdministratorAccess"],
-  //         Effect: "Allow",
-  //         Resource: "*", // Specify the appropriate resource
-  //       },
-  //     ],
-  //   }),
-  // });
-
-  // const rolePolicyAttachment = new aws.iam.RolePolicyAttachment(
-  //   "awsNodeRolePolicyAttachment",
-  //   {
-  //     role: awsNodeRole,
-  //     policyArn: awsNodePolicy.arn,
-  //   },
-  // );
-
-  // const awsNodeServiceAccount = new k8s.core.v1.ServiceAccount(
-  //   "awsNodeServiceAccount",
-  //   {
-  //     metadata: {
-  //       name: "aws-node",
-  //       namespace: "kube-system",
-  //       annotations: {
-  //         "eks.amazonaws.com/role-arn": awsNodeRole.arn,
-  //       },
-  //     },
-  //   },
-  //   { provider: cluster.provider },
-  // );
-  
-  // // fix aws-node
 
 // Define the ClusterRole
 const clusterRole = new k8s.rbac.v1.ClusterRole(
@@ -159,6 +95,11 @@ const clusterRole = new k8s.rbac.v1.ClusterRole(
         apiGroups: ["networking.k8s.io"],
         resources: ["policyendpoints"],
         verbs: [ "watch", "list"],
+      },
+      {
+        apiGroups: ["networking.k8s.aws"],
+        resources: ["policyendpoints"],
+        verbs: ["watch", "list"],
       },
     ],
   },
@@ -194,17 +135,12 @@ const clusterRoleBinding = new k8s.rbac.v1.ClusterRoleBinding(
   },
 );
   
-  
-
-  // Create a role-based kubeconfig with the named profile and the new
-  // role mapped into the cluster's RBAC.
+  // Create a role-based kubeconfig with the named profile and the new role mapped into the k8s-inherent RBAC.
   const roleKubeConfigOpts: eks.KubeconfigOptions = {
     profileName: aws.config.profile,
     roleArn: eksClusterRole.arn,
   };
-
   const roleKubeConfig = cluster.getKubeconfig(roleKubeConfigOpts);
-
   const roleProvider = new k8s.Provider(
     "provider",
     {
