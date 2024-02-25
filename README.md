@@ -8,7 +8,7 @@ Here is the tech stack, visualizing the basic idea that the lowest layer "Cloud 
 
 ![](images/cloud-agnostic-tech-stack-without-dirs.svg)
 
-For more in depth reading about cloud agnosticism and multi-cloud you can read the [related blog article to this repo](https://blog.knip-builds.de/posts/multi-cloud-all-the-way/).
+<!-- For more in depth reading about cloud agnosticism and multi-cloud you can read the [related blog article to this repo](https://blog.knip-builds.de/posts/multi-cloud-all-the-way/). -->
 
 ## Implementation examples
 
