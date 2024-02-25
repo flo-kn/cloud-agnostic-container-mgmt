@@ -2,7 +2,7 @@
 
 A project to help you run container workloads in the cloud-agnostic style.
 
-In this repo you find ways to run a workload, demonstrated with hello world nginx web server inside a container and deploy it to the different managed Kubernetes Services from the various cloud providers using a few so called Kubernetes Plugins. We will also find how it can be done with different IAC tools. The container/Kubernetes Layer pules in a kind of more or less standardized layer that all providers support and that can be advantageous in case you want to keep the door open for a eventual migration of your workloads between different cloud provider with a manageable amount of effort.
+In this repo you will find ways to run a workload, demonstrated with a hello world nginx container on the various managed Kubernetes Services from different cloud providers using a few so called Kubernetes Plugins. You will also find how it can be done with different IAC tools. The container/Kubernetes Layer pulls in a layer that enforces some degree of standardization that all providers support and that can be advantageous in case you want to keep the door open for a eventual migration of your workloads between different cloud provider with a manageable amount of effort.
 
 Here is the tech stack, visualizing the basic idea that the lowest layer "Cloud Provider" can be exchanged as a whole or maybe even in parts in case eer needed:
 
@@ -32,5 +32,3 @@ t.b.a.
 ### What about cloud-agnostic DNS Service?
 
 t.b.a.
-
-
