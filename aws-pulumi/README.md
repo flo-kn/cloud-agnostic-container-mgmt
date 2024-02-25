@@ -232,6 +232,10 @@ pulumi up
 
 _(will deploy all infrastructure needed to host the static content and sync the content in the local `./public` folder with the s3 bucket.)_
 
+![](./images/browser-nginx.png)
+
+Congrats! 🥳 You successfully deployed a Hello World WebApp to an Azure AKS K8s Cluster exposed via AGIC enabled Azure Application Gateway. Happy Multi-Clouding!
+
 ### Interact with the cluster
 
 Update the kubeconfig

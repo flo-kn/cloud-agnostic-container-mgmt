@@ -55,15 +55,17 @@ MacOS:
    terraform apply -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
    ```
 
-   The deployment of the of `nginx-ingress` in [`./modules/demo-app`](./modules/demo-app/) will fail initially due to this line:
+   Note: 🐛💥 The deployment of the of `nginx-ingress` in [`./modules/demo-app`](./modules/demo-app/) will fail initially due to this line of the `./modules/demo-app/main.tf`:
 
-   ```
+   ```yaml
    "kubernetes.io/ingress.class" = "azure/application-gateway"
    ```
 
-   Here is the current work around. Change it to this:
+   Here is the current work around to fix it:
+   
+   Change it to this:
 
-   ```
+   ```yaml
    "kubernetes.io/ingress.class" = "azure-application-gateway"
    ```
 
@@ -82,7 +84,7 @@ MacOS:
    Outputs:
 
    ...
-   demo_app_public_ip_address = "http://4.185.77.79"
+   demo_app_public_ip_address = "http://4.184.78.79"
    ...
 
    ```
@@ -91,7 +93,7 @@ MacOS:
 
    ![](./images/browser-nginx.png)
 
-   Congrats! 🥳 You successfully deployed a Hello World WebApp to an Azure AKS K8s Cluster exposed via AGIC enabled Azure Application Gateway. Happy Multi-Clouding
+   Congrats! 🥳 You successfully deployed a Hello World WebApp to an Azure AKS K8s Cluster exposed via AGIC enabled Azure Application Gateway. Happy Multi-Clouding!
 
 6. [OPTIONAL:] Update you kube-config in order to interact with the k8s cluster:
 
