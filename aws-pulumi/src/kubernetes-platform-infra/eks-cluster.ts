@@ -39,7 +39,6 @@ export const createK8sCluster = (
     description: "Amazon EKS - Cluster role",
   });
 
-
   // Create the EKS cluster itself and a deployment of the Kubernetes dashboard.
   const cluster = new eks.Cluster("cluster", {
     name: name,
@@ -47,7 +46,6 @@ export const createK8sCluster = (
     privateSubnetIds: vpc.privateSubnetIds,
     publicSubnetIds: vpc.publicSubnetIds,
     instanceType: props.instanceType,
-    // serviceRole: eksClusterRole,
     desiredCapacity: props.desiredCapacity,
     minSize: props.minSize,
     maxSize: props.maxSize,
@@ -72,61 +70,60 @@ export const createK8sCluster = (
     version: "1.28",
   });
 
-
-// Define the ClusterRole
-const clusterRole = new k8s.rbac.v1.ClusterRole(
-  "aws-node-policy-endpoints",
-  {
-    apiVersion: "rbac.authorization.k8s.io/v1",
-    kind: "ClusterRole",
-    metadata: {
-      name: "aws-node-policy-endpoints",
-    },
-    rules: [
-      {
-        apiGroups: ["networking.k8s.io"],
-        resources: ["policyendpoints"],
-        verbs: [ "watch", "list"],
-      },
-      {
-        apiGroups: ["networking.k8s.aws"],
-        resources: ["policyendpoints"],
-        verbs: ["watch", "list"],
-      },
-    ],
-  },
-  {
-    provider: cluster.core.provider,
-  },
-);
-
-// Define the ClusterRoleBinding
-const clusterRoleBinding = new k8s.rbac.v1.ClusterRoleBinding(
-  "aws-node-policy-endpoints-binding",
-  {
-    apiVersion: "rbac.authorization.k8s.io/v1",
-    kind: "ClusterRoleBinding",
-    metadata: {
-      name: "aws-node-policy-endpoints-binding",
-    },
-    roleRef: {
+  // Define the ClusterRole
+  const clusterRole = new k8s.rbac.v1.ClusterRole(
+    "aws-node-policy-endpoints",
+    {
+      apiVersion: "rbac.authorization.k8s.io/v1",
       kind: "ClusterRole",
-      name: "aws-node-policy-endpoints", // Ensure this is the correct name
-      apiGroup: "rbac.authorization.k8s.io",
-    },
-    subjects: [
-      {
-        kind: "ServiceAccount",
-        name: "aws-node",
-        namespace: "kube-system"
+      metadata: {
+        name: "aws-node-policy-endpoints",
       },
-    ],
-  },
-  {
-    provider: cluster.core.provider,
-  },
-);
-  
+      rules: [
+        {
+          apiGroups: ["networking.k8s.io"],
+          resources: ["policyendpoints"],
+          verbs: ["watch", "list"],
+        },
+        {
+          apiGroups: ["networking.k8s.aws"],
+          resources: ["policyendpoints"],
+          verbs: ["watch", "list"],
+        },
+      ],
+    },
+    {
+      provider: cluster.core.provider,
+    },
+  );
+
+  // Define the ClusterRoleBinding
+  const clusterRoleBinding = new k8s.rbac.v1.ClusterRoleBinding(
+    "aws-node-policy-endpoints-binding",
+    {
+      apiVersion: "rbac.authorization.k8s.io/v1",
+      kind: "ClusterRoleBinding",
+      metadata: {
+        name: "aws-node-policy-endpoints-binding",
+      },
+      roleRef: {
+        kind: "ClusterRole",
+        name: "aws-node-policy-endpoints", // Ensure this is the correct name
+        apiGroup: "rbac.authorization.k8s.io",
+      },
+      subjects: [
+        {
+          kind: "ServiceAccount",
+          name: "aws-node",
+          namespace: "kube-system",
+        },
+      ],
+    },
+    {
+      provider: cluster.core.provider,
+    },
+  );
+
   // Create a role-based kubeconfig with the named profile and the new role mapped into the k8s-inherent RBAC.
   const roleKubeConfigOpts: eks.KubeconfigOptions = {
     profileName: aws.config.profile,
