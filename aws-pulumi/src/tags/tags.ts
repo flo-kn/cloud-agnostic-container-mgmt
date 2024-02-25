@@ -7,10 +7,10 @@ const config = new pulumi.Config();
  */
 export const tags: Record<string, string> = {
   /**
-   * Tag the resource with the name of the deployment tool that provisioned the resource
+   * Tag the resource with the name of the IAC tool responsible for the resource
    */
-  DeploymentTool: "pulumi",
   PulumiConfigName: config.name,
   PulumiProject: pulumi.getProject(),
   PulumiStack: pulumi.getStack(),
+  IACTool: "pulumi",
 };

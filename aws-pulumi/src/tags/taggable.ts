@@ -229,7 +229,7 @@ const taggableResourceTypes = [
 ];
 
 /**
- * isTaggable returns true if the given resource type is an AWS resource that supports tags.
+ * functions returns true if the given resource type is an AWS resource that supports tags.
 
  * @param t 
  * @returns true if resource is taggable, false otherwise

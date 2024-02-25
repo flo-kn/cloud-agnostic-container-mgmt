@@ -39,14 +39,6 @@ export const createK8sCluster = (
     description: "Amazon EKS - Cluster role",
   });
 
-  // // Attach the necessary policies to the role
-  // const servicePolicyAttachment = new aws.iam.RolePolicyAttachment(
-  //   "eks-service-policy-attachment",
-  //   {
-  //     role: eksClusterRole.name,
-  //     policyArn: "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
-  //   },
-  // );
 
   // Create the EKS cluster itself and a deployment of the Kubernetes dashboard.
   const cluster = new eks.Cluster("cluster", {
@@ -77,7 +69,7 @@ export const createK8sCluster = (
       },
     ],
     createOidcProvider: true,
-    version: "1.28", //1.29
+    version: "1.28",
   });
 
 

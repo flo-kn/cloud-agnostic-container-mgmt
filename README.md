@@ -12,7 +12,7 @@ Here is the tech stack, visualizing the basic idea that the lowest layer "Cloud 
 
 ## Implementation examples
 
-Different ways to do same thing. In the sub directories of this repo you can find the different instances of implementing our demo case in cloud-agnostic style. From the names of folders you get indication about the cloud provider and the IaC tool that has been used:
+Different ways to do same thing: In the sub directories of this repo you can find the different instances of implementing the demo case. From the names of folders you get indication about the cloud provider and the IaC tool that has been used:
 
 - [aws-pulumi](./aws-pulumi/README.md)
 - [azure-terraform](./az-terraform/README.md)

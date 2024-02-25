@@ -16,7 +16,7 @@ export interface IPublicDnsConfig {
 }
 
 /**
- * Configuration Values for provisioning the EKS Cluster
+ * Configuration for defining the EKS Cluster
  */
 export interface IClusterConfigs {
   /**
@@ -37,11 +37,11 @@ export interface IClusterConfigs {
    */
   maxSize: number;
   /**
-   * Name of the Namespace to be created on cluster creation
+   * Name of the k8s namespace to be created on cluster creation
    */
   namespace?: string;
   /**
-   * Name of the IAM
+   * Name of the IAM role to be mapped
    */
   additionalRoleMappings: IAdditionalRoleMappings;
 }

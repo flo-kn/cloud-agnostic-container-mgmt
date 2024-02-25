@@ -3,99 +3,106 @@
 ## Prerequs:
 
 - Some basic understanding of Infrastructure-As-Code such as terraform
-- AWS knowledge, alternative knowledge in some other hyperscaler (Azure, GCP) should be sufficient
+- AWS knowledge, alternatively knowledge in some other hyperscaler (Azure, GCP) should be sufficient
 - A fully fledged Azure subscription (Your user needs to be able to provision resources such as vnets, AKS, app registrations, Azure Application Gateway)
 - A license set named ["Microsoft Entra ID P2"](https://www.microsoft.com/en-us/security/business/microsoft-entra-pricing?market=de). As of today 23.02.21, you can easily book a 1 month term 100 licenses
 
 ## Dependencies
 
 MacOS:
+
 - Terraform v1.5.7: `brew install terraform`
 - We use tflint as linting tool for our terraform code. On mac simply install it like so: `brew install tflint`
-
 
 ## Getting started
 
 1. Create Azure Principle
 
    It will serve as the identity of our Azure AKS resource.
-    ```sh
-    az ad sp create-for-rbac --name "aks-service-principle" -o json > auth.json
-    # ...and set some env vars and secrets tied to your terminal session only.
-    appId=$(jq -r ".appId" auth.json)
-    password=$(jq -r ".password" auth.json)
-    ```
 
-    ```sh
-    objectId=$(az ad sp show --id $appId --query "objectId" -o tsv)
-    ```
-    _(Don't worry. The auth.json is part of the `.gitignore`. You should never add secrets to version control.)_
+   ```sh
+   az ad sp create-for-rbac --name "aks-service-principle" -o json > auth.json
+   # ...and set some env vars and secrets tied to your terminal session only.
+   appId=$(jq -r ".appId" auth.json)
+   password=$(jq -r ".password" auth.json)
+   ```
 
-2. Initialize the project 
-    ```sh
-    terraform init
-    ```
+   ```sh
+   objectId=$(az ad sp show --id $appId --query "objectId" -o tsv)
+   ```
+
+   _(Don't worry. The auth.json is part of the `.gitignore`. You should never add secrets to version control.)_
+
+2. Initialize the project
+
+   ```sh
+   terraform init
+   ```
 
 3. Update or fill in the remaining terraform values of your choice (e.g. Azure region) here in this [terraform.tfvars](./terraform.tfvars) file.
 
-    _(Note: You can set default values in the `terraform.tfvars` or pass the values during the prompt when executing `terraform apply`)_
+   _(Note: You can set default values in the `terraform.tfvars` or pass the values during the prompt when executing `terraform apply`)_
 
 4. Dry-Run:
-    ```sh
-    terraform plan -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
-    ```
+
+   ```sh
+   terraform plan -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
+   ```
 
 5. Deploy everything:
-    ```sh
-    terraform apply -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
-    ```
 
-    The deployment of the of `nginx-ingress` in [`./modules/demo-app`](./modules/demo-app/) will fail initially due to this line:
+   ```sh
+   terraform apply -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
+   ```
 
-      ```
-      "kubernetes.io/ingress.class" = "azure/application-gateway"
-      ```
+   The deployment of the of `nginx-ingress` in [`./modules/demo-app`](./modules/demo-app/) will fail initially due to this line:
 
-      Here is the current work around. Change it to this:   
+   ```
+   "kubernetes.io/ingress.class" = "azure/application-gateway"
+   ```
 
-      ```
-      "kubernetes.io/ingress.class" = "azure-application-gateway"
-      ```
-      Deploy and then change it back and deploy it again. Then it will work..
+   Here is the current work around. Change it to this:
 
+   ```
+   "kubernetes.io/ingress.class" = "azure-application-gateway"
+   ```
 
-    Note the list of outputs to of the terraform deployment log:
-    ```
-      Enter a value: yes
+   Deploy and then change it back and deploy it again. Then it will work..
 
-    module.demo-app.kubernetes_ingress_v1.nginx: Modifying... [id=default/nginx-ingress]
-    module.demo-app.kubernetes_ingress_v1.nginx: Modifications complete after 0s [id=default/nginx-ingress]
+   Note the list of outputs to of the terraform deployment log:
 
-    Apply complete! Resources: 0 added, 1 changed, 0 destroyed.
+   ```
+     Enter a value: yes
 
-    Outputs:
+   module.demo-app.kubernetes_ingress_v1.nginx: Modifying... [id=default/nginx-ingress]
+   module.demo-app.kubernetes_ingress_v1.nginx: Modifications complete after 0s [id=default/nginx-ingress]
 
-    ...
-    demo_app_public_ip_address = "http://4.185.77.79"
-    ...
+   Apply complete! Resources: 0 added, 1 changed, 0 destroyed.
 
-    ```
-    Command/Ctrl-Click on the IP address and allow your browser to open the website.
+   Outputs:
 
-    ![](./images/browser-nginx.png)
+   ...
+   demo_app_public_ip_address = "http://4.185.77.79"
+   ...
 
-    Congrats! 🥳 You successfully deployed a Hello World WebApp to an Azure AKS K8s Cluster exposed via AGIC enabled Azure Application Gateway. Happy Multi-Clouding
+   ```
 
+   Command/Ctrl-Click on the IP address and allow your browser to open the website.
+
+   ![](./images/browser-nginx.png)
+
+   Congrats! 🥳 You successfully deployed a Hello World WebApp to an Azure AKS K8s Cluster exposed via AGIC enabled Azure Application Gateway. Happy Multi-Clouding
 
 6. [OPTIONAL:] Update you kube-config in order to interact with the k8s cluster:
-    ```sh
-    az aks get-credentials --resource-group multi-cloud-demo-rg --name aksdev
-    ```
+
+   ```sh
+   az aks get-credentials --resource-group multi-cloud-demo-rg --name aksdev
+   ```
 
 7. [OPTIONAL:] Tear down all resources again of your dev environment again.
-    ```sh
-    terraform destroy -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId} 
-    ```
+   ```sh
+   terraform destroy -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
+   ```
 
 ## Linting
 
@@ -103,7 +110,8 @@ MacOS:
 tflint
 ```
 
-## Refs: 
+## Refs:
+
 - [Terraform Official - kubernetes](https://developer.hashicorp.com/terraform/tutorials/kubernetes/aks)
 - [Azure Application Gateway](https://github.com/Azure/application-gateway-kubernetes-ingress/blob/master/docs/setup/install-new.md)
 - [AKS managed identity in Azure Kubernetes Service ](https://learn.microsoft.com/en-us/azure/aks/use-managed-identity?source=recommendations)
@@ -119,19 +127,20 @@ tflint
 ## Troubleshooting
 
 - Error: `Kubernetes cluster unreachable: invalid configuration: no configuration has been provided, try setting KUBERNETES_MASTER environment variable`
-  
+
   Fix: `terraform init -upgrade`
 
-
 ## Left-To-Dos:
+
 Terraform the following:
-- [ ] Configure aws module linter with aws credential  https://github.com/terraform-linters/tflint-ruleset-aws/blob/master/docs/configuration.md
+
+- [ ] Configure aws module linter with aws credential https://github.com/terraform-linters/tflint-ruleset-aws/blob/master/docs/configuration.md
 - [ ] Add tags
 - [x] Check if WAF configuration could be optional
 - [ ] Find a way to use Application Gateway and get rid of `docker_bridge_cidr` at the same time
-- [ ] Add option to enable RBAC 
+- [ ] Add option to enable RBAC
 - [ ] Move tf state to azure storage account
-- [ ] Modularize it a bit more. 
+- [ ] Modularize it a bit more.
 - [ ] Make some automated deployments with e.g. ARGO CD, GH Actions
 - [ ] Resolve remaining warnings from TF lint
 - [ ] Improve secret handling. Maybe find an alternative to exporting the principles `appId`, `objectId`, and `password` ` to the terminal.
