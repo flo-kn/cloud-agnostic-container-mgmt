@@ -1,0 +1,3 @@
+name: cloud-agnostic-container-mgmt
+runtime: nodejs
+description: A cloud project to help you run container workloads the cloud-agnostic style 
