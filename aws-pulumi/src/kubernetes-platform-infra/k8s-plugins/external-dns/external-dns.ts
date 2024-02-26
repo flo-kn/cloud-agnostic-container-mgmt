@@ -8,7 +8,6 @@ import { IVirtualHwResourcesConfigs } from "../../../types";
 export const addExternalDnsPlugin = (
   provider: k8s.Provider,
   cluster: eks.Cluster,
-  // here we provide some default resources constraints for this plugin
   externalDNSResourceConfigs: IVirtualHwResourcesConfigs = {
     limits: {
       cpu: "50m",
