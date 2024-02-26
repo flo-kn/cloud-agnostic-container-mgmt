@@ -1,11 +1,10 @@
-# Multi-Cloud - Azure Terraform k8s platform
+# Multi-Cloud - AWS pulumi k8s platform
 
 ## Prerequs:
 
-- Some Pulumi KnowHow or at least Infrastructure-As-Code Knowhow
+- Some Pulumi Know-How or at least Infrastructure-As-Code Knowhow
 - Basic Typescript Node Knowledge
 - An AWS account with AdministratorAccess or similar permissionSet
-- AWS knowledge, alternatively knowledge in some other hyperscaler (Azure, GCP) should be sufficient
 
 ## Dependencies
 
@@ -15,7 +14,7 @@
 
 ## Getting started
 
-### Login to Cloud account (AWS):
+### Login to your AWS cloud account:
 
 [Login](https://docs.aws.amazon.com/signin/latest/userguide/how-to-sign-in.html) to your AWS account with your terminal. I highly recommend using [AWS SSO](https://docs.aws.amazon.com/sdkref/latest/guide/access-sso.html) in combination with a configured AWS profile. More details on different options to sign in [here](https://docs.aws.amazon.com/signin/latest/userguide/how-to-sign-in.html).
 
@@ -206,19 +205,6 @@ config:
       baseDomainName: "multi-cloud-demo.company-as-code.com"
 
 ```
-
-
-Pulumi might prompt you for missing configs. In the end it should create a stack `.yaml`-file containing all pulumi configs. You can think of them as environment variables for your infrastructure project:
-
-`./Pulumi.my-cool-blog-prod.yaml`
-```yaml
-encryptionsalt: v1:abcDEF123XZW=:v1:ABC123//:12345678xxxxxxxxxxxx
-config:
-  static-website:pathToWebsiteContents: public
-  static-website:targetDomain: blog.mycooldomain.com
-  static-website:author: JonDoe
-  static-website:organization: JonDoesOrg
-```
 > Hint: Dont worry about commiting the `encryptionsalt`. It's the encryption salt of your PULUMI_PASSPHRASE and NOT a secret. 
 
 
@@ -230,11 +216,11 @@ config:
 pulumi up
 ```
 
-_(will deploy all infrastructure needed to host the static content and sync the content in the local `./public` folder with the s3 bucket.)_
+_(Will deploy all infrastructure needed to host the static content and sync the content in the local `./public` folder with the s3 bucket.)_
 
 ![](./images/browser-nginx.png)
 
-Congrats! 🥳 You successfully deployed a Hello World WebApp to an Azure AKS K8s Cluster exposed via AGIC enabled Azure Application Gateway. Happy Multi-Clouding!
+Congrats! 🥳 You successfully deployed a Hello World WebApp to an AWS EKS K8s Cluster exposed via ALB Ingress Controller. Happy Multi-Clouding!
 
 ### Interact with the cluster
 
@@ -268,5 +254,5 @@ Prettier auto-formatting of your TS Code
 
 - [ ] Probably many
 - [ ] automate deployment using GH Actions
-- [ ] Enable external DNS
+- [ ] Enable external DNS k8s plugin
 - [ ] Upgrade to Kubernetes 1.29
