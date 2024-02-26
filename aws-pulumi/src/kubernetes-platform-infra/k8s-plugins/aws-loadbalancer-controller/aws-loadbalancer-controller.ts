@@ -10,7 +10,6 @@ export const addAwsLoadBalancerController = (
   vpcId: pulumi.Output<string>,
   cluster: eks.Cluster,
   provider: k8s.Provider,
-  // here we provide some default resources constraints for this plugin
   awsLoadBalancerControllerResourceConfigs: IVirtualHwResourcesConfigs = {
     limits: {
       cpu: "100m",
