@@ -2,7 +2,7 @@ import * as k8s from "@pulumi/kubernetes";
 
 export const createNamespaces = (
   provider: k8s.Provider,
-  namespaceName = "default-hello-world", // override default in the pulumi yaml confs param
+  namespaceName = "default-hello-world", // override default in the pulumi yaml configs param
 ): {
   namespace: k8s.core.v1.Namespace;
 } => {
