@@ -16,8 +16,8 @@ Here is the tech stack suggesting the basic idea that the lower layer "Cloud Pro
 
 Different ways to do same thing: In the sub directories of this repo you can find the different instances of the demo case. From the names of folders you get indication about the cloud provider and the IaC tool that has been used:
 
-- [aws-pulumi](./aws-pulumi/README.md)
 - [azure-terraform](./az-terraform/README.md)
+- [aws-pulumi](./aws-pulumi/README.md)
 - azure-pulumi 👷‍♂️👷‍♀️ _(Stay tuned. Work in progress)_
 - gcp-terraform 👷‍♂️👷‍♀️ _(Stay tuned. Work in progress)_
 
