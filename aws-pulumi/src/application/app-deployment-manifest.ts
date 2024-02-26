@@ -6,7 +6,7 @@ import * as pulumi from "@pulumi/pulumi";
  *
  * @param namespace - The k8s namespace
  */
-export const createAppDeploymentManifest = async (
+export const defineAppDeploymentManifest = async (
   appName: string,
   namespace: k8s.core.v1.Namespace,
   provider: k8s.Provider,
