@@ -6,7 +6,7 @@ provider "azurerm" {
 data "azurerm_subscription" "current" {}
 
 module "resource_group" {
-  source = "./modules/resource_group"
+  source = "./modules/resource-group"
   location = local.location
 }
 
