@@ -18,7 +18,7 @@ export interface IPublicDnsConfig {
 /**
  * Configuration for defining the EKS Cluster
  */
-export interface IClusterConfigs {
+export interface IEksConfigs {
   /**
    * Compute instance type. In our case we use EC2.
    * Use this https://aws.amazon.com/ec2/instance-types/ to get an overview of types
@@ -57,7 +57,7 @@ export interface IPulumiConfigs {
   /**
    * Cluster Configuration
    */
-  clusterConfigs: IClusterConfigs;
+  clusterConfigs: IEksConfigs;
   /**
    *  DNS Configuration
    */
@@ -107,7 +107,6 @@ export interface IAdditionalRoleMappings {
    */
   awsSsoAdminRoleArn: string;
 }
-
 
 /**
  * CPU and Memory Specification needed from the k8s cluster

@@ -1,5 +1,5 @@
 import { IHelloWorldOnEksConfigs, IInfrastructureConfigs } from "../types";
-import { createK8sCluster as defineK8sCluster } from "./eks-cluster";
+import { createK8sCluster as defineK8sCluster } from "./eks";
 import { addAwsLoadBalancerController as defineAwsLoadBalancerController } from "./kubernetes-plugins";
 import { createNamespaces as defineNamespaces } from "./namespaces";
 import { createVPC as defineVpc } from "./vpc";

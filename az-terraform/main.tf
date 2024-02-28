@@ -10,8 +10,8 @@ module "resource_group" {
   location = local.location
 }
 
-module "network" {
-  source = "./modules/network"
+module "vnet" {
+  source = "./modules/vnet"
   location = local.location
   resource_group_name = module.resource_group.resource_group_name
 }
@@ -43,7 +43,7 @@ resource "azurerm_application_gateway" "aks_appgw" {
 
   gateway_ip_configuration {
     name      = "appGatewayIpConfig"
-    subnet_id = module.network.subnet_aks_appgw_id
+    subnet_id = module.vnet.subnet_aks_appgw_id
   }
 
   frontend_ip_configuration {
@@ -121,7 +121,7 @@ resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
     node_count      = var.aksAgentCount
     vm_size         = var.aksAgentVMSize
     os_disk_size_gb = var.aksAgentOsDiskSizeGB
-    vnet_subnet_id  = module.network.subnet_aks_kubernetes_id
+    vnet_subnet_id  = module.vnet.subnet_aks_kubernetes_id
   }
 
   service_principal {
