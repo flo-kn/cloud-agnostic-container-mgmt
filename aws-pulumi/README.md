@@ -216,7 +216,7 @@ config:
 pulumi up
 ```
 
-_(Will deploy all infrastructure needed to host the static content and sync the content in the local `./public` folder with the s3 bucket.)_
+_(Will deploy all infrastructure needed to host the nginx hello world app including the k8s manifest with the hello world nginx itself.)_
 
 ![](./images/browser-nginx.png)
 
