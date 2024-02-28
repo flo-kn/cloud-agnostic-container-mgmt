@@ -5,17 +5,6 @@ import * as k8s from "@pulumi/kubernetes";
 import { Input, Output } from "@pulumi/pulumi";
 
 /**
- * A pulumi aws.route53.DelegationSet and a pulumi aws.route53.Zone should be created before using
- * this construct.
- */
-export interface IPublicDnsConfig {
-  /**
-   * The base domain name to be used for creating the proxy endpoint for the data-plane. E.g. "my-cloud-agnostic-app.my-domain.com"
-   */
-  baseDomainName: string;
-}
-
-/**
  * Configuration for defining the EKS Cluster
  */
 export interface IEksConfigs {
