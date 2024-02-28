@@ -131,9 +131,5 @@ export interface IHelloWorldOnEksConfigs {
      * Configs necessary for the provisioning of the Hello World on EKS infrastructure.
      */
     props: IPulumiConfigs;
-    /**
-     * The aws hosted zone id where the records will be created
-     */
-    awsHostedZoneId: Output<string>;
   };
 }
