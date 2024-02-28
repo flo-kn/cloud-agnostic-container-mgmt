@@ -4,11 +4,11 @@ _A cloud infrastructure project that enables you to run and manage container wor
 
 ## General idea
 
-In this repo you will find ways to run a workload, demonstrated with a hello world nginx container on the various managed Kubernetes Services from different cloud providers using a few so called Kubernetes Plugins. You will also find how it can be done with different IAC tools. The container/Kubernetes Layer pulls in a layer that enforces some degree of standardization that all providers support and that can be advantageous in case you want to keep the door open for a eventual migration of your workloads between different cloud provider with a manageable amount of effort.
+In this repo you will find examples to run a workload the cloud-agnostic way, demonstrated with a hello world nginx workload. Achieve that, we make use of the various managed Kubernetes Services from different cloud providers using a few so called Kubernetes Plugins. You will also find how it can be done with different IAC tools. The container/Kubernetes Layer pulls in a layer that enforces some degree of standardization that all providers support and that can be advantageous in case you want to keep the door open for a eventual migration of your workloads between different cloud provider with a manageable amount of effort.
 
 Here is the tech stack suggesting the basic idea that the lower layer "Cloud Provider" can be exchanged as a whole or maybe even in parts in case ever needed:
 
-![](images/cloud-agnostic-tech-stack-without-dirs.svg)
+![](images/cloud-agnostic-tech-stack.svg)
 
 <!-- For more in depth reading about cloud agnosticism and multi-cloud you can read the [related blog article to this repo](https://blog.knip-builds.de/posts/multi-cloud-all-the-way/). -->
 
