@@ -27,12 +27,6 @@ export const defineKubernetesContainerPlatform = (
     resourceConfigs?.awsLoadBalancerController,
   );
 
-  // const externalDNS = defineExternalDnsPlugin(
-  //   eksCluster.roleProvider,
-  //   eksCluster.cluster,
-  //   resourceConfigs?.externalDNS,
-  // );
-
   const k8sNamespaces = defineNamespaces(
     eksCluster.roleProvider,
     clusterConfigs.namespace,
