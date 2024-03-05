@@ -3,7 +3,7 @@
 ## Prerequs:
 
 - Some basic understanding of Infrastructure-As-Code such as terraform
-- AWS knowledge, alternatively knowledge in some other hyperscaler (Azure, GCP) should be sufficient
+- Azure knowledge, alternatively knowledge in some other hyperscaler (AWS, GCP) should be sufficient
 - A fully fledged Azure subscription (Your user needs to be able to provision resources such as vnets, AKS, app registrations, Azure Application Gateway)
 - A license set named ["Microsoft Entra ID P2"](https://www.microsoft.com/en-us/security/business/microsoft-entra-pricing?market=de). As of today 23.02.21, you can easily book a 1 month term 100 licenses
 
