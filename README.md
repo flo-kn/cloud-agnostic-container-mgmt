@@ -1,5 +1,7 @@
 # cloud-agnostic-container-mgmt
 
+![Static Badge](https://img.shields.io/badge/knip--builds-official-brightgreen%3Fstyle%3Dflat)
+
 _A cloud infrastructure project that enables you to run and manage container workloads the cloud-agnostic style._
 
 ## General idea
