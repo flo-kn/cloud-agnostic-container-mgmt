@@ -1,7 +1,14 @@
+variable "subscription_id" {
+  description = "Azure Subscription ID"
+  type        = string
+  default     = ""  # Empty default
+}
+
 variable "location" {
   description = "The azure region. Pick yours from the list: https://azure.microsoft.com/en-us/explore/global-infrastructure/geographies/#choose-your-region"
   type        = string
 } 
+# TODO: Remove this one and replace with workload identity
 variable "aksServicePrincipalAppId" {
   description = "appId of the service principal. Used by AKS to manage AKS related resources on Azure like VMs, subnets."
   type        = string
@@ -51,7 +58,7 @@ variable "aksAgentVMSize" {
 variable "kubernetesVersion" {
   description = "The version of Kubernetes."
   type        = string
-  default     = "1.27.7"
+  default     = "1.34.1"
 }
 
 variable "aksServiceCIDR" {
@@ -64,12 +71,6 @@ variable "aksDnsServiceIP" {
   description = "Containers DNS server IP address."
   type        = string
   default     = "10.2.0.10"
-}
-
-variable "aksDockerBridgeCIDR" {
-  description = "A CIDR notation IP for Docker bridge."
-  type        = string
-  default     = "172.17.0.1/16"
 }
 
 variable "aksEnableRBAC" {
@@ -91,7 +92,12 @@ variable "waf_enabled" {
 }
 
 variable "workload_identity" {
-  description = "Workload Id of the pod responsibel for configuring the the Application Gateway"
+  description = "Workload Id of the pod responsible for configuring the the Application Gateway"
   type        = string
   default     = "azure_ingress_workload_identity"
+}
+
+variable "dns_zone_name" {
+  description = "The name of the DNS zone to create"
+  type        = string
 }

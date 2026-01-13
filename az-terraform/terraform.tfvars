@@ -1,3 +1,3 @@
 location                           = "Germany West Central" 
-kubernetesVersion                  = "1.27.7"
+kubernetesVersion                  = "1.34.1"
 environmentPrefix                  = "dev"

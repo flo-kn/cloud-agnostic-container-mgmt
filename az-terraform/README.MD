@@ -6,12 +6,13 @@
 - Azure knowledge, alternatively knowledge in some other hyperscaler (AWS, GCP) should be sufficient
 - A fully fledged Azure subscription (Your user needs to be able to provision resources such as vnets, AKS, app registrations, Azure Application Gateway)
 - A license set named ["Microsoft Entra ID P2"](https://www.microsoft.com/en-us/security/business/microsoft-entra-pricing?market=de). As of today 23.02.21, you can easily book a 1 month term 100 licenses
+- A custom domain for DNS Zone
 
 ## Dependencies
 
 MacOS:
 
-- Terraform v1.5.7: `brew install terraform`
+- hashicorp terraform 1.14. `brew install hashicorp/tap/terraform` (Might work with openTofu to but need to test it)
 - We use tflint as linting tool for our terraform code. On mac simply install it like so: `brew install tflint`
 
 ## Getting started
@@ -28,7 +29,7 @@ MacOS:
    ```
 
    ```sh
-   objectId=$(az ad sp show --id $appId --query "objectId" -o tsv)
+   objectId=$(az ad sp show --id $appId --query "id" -o tsv)
    ```
 
    _(Don't worry. The auth.json is part of the `.gitignore`. You should never add secrets to version control.)_
@@ -43,16 +44,22 @@ MacOS:
 
    _(Note: You can set default values in the `terraform.tfvars` or pass the values during the prompt when executing `terraform apply`)_
 
+4. set the custom domain
+
+  ```
+  export dns_zone_name="my.domain.com"
+  ```
+
 4. Dry-Run:
 
    ```sh
-   terraform plan -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
+   terraform plan -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId} -var="dns_zone_name"=${customDomain} -var="subscription_id=$(az account show --query id -o tsv)"
    ```
 
 5. Deploy everything:
 
    ```sh
-   terraform apply -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
+   terraform apply -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId} -var="dns_zone_name"=${customDomain} -var="subscription_id=$(az account show --query id -o tsv)"
    ```
 
    Note: 🐛💥 The deployment of the of `nginx-ingress` in [`./modules/demo-app`](./modules/demo-app/) will fail initially due to this line of the `./modules/demo-app/main.tf`:
@@ -138,6 +145,7 @@ Terraform the following:
 
 - [ ] Configure aws module linter with aws credential https://github.com/terraform-linters/tflint-ruleset-aws/blob/master/docs/configuration.md
 - [ ] Add tags
+- [ ] consistent variable names (snake_case not camelCase)
 - [x] Check if WAF configuration could be optional
 - [ ] Find a way to use Application Gateway and get rid of `docker_bridge_cidr` at the same time
 - [ ] Add option to enable RBAC
