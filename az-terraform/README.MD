@@ -11,7 +11,7 @@
 
 MacOS:
 
-- Terraform v1.5.7: `brew install terraform`
+- hashicorp terraform 1.14. `brew install hashicorp/tap/terraform` (Might work with openTofu to but need to test it)
 - We use tflint as linting tool for our terraform code. On mac simply install it like so: `brew install tflint`
 
 ## Getting started
@@ -28,7 +28,7 @@ MacOS:
    ```
 
    ```sh
-   objectId=$(az ad sp show --id $appId --query "objectId" -o tsv)
+   objectId=$(az ad sp show --id $appId --query "id" -o tsv)
    ```
 
    _(Don't worry. The auth.json is part of the `.gitignore`. You should never add secrets to version control.)_
@@ -46,13 +46,13 @@ MacOS:
 4. Dry-Run:
 
    ```sh
-   terraform plan -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
+   terraform plan -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId} -var="subscription_id=$(az account show --query id -o tsv)"
    ```
 
 5. Deploy everything:
 
    ```sh
-   terraform apply -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
+   terraform apply -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId} -var="subscription_id=$(az account show --query id -o tsv)"
    ```
 
    Note: 🐛💥 The deployment of the of `nginx-ingress` in [`./modules/demo-app`](./modules/demo-app/) will fail initially due to this line of the `./modules/demo-app/main.tf`:
