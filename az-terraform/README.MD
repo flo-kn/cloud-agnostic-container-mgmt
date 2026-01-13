@@ -47,7 +47,7 @@ MacOS:
 4. set the custom domain
 
   ```
-  export dns_zone_name="my.domain.com"
+  export customDomain="my.domain.com"
   ```
 
 4. Dry-Run:
