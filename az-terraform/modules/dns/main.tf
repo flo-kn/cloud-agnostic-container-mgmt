@@ -1,4 +1,4 @@
 resource "azurerm_dns_zone" "main" {
-  name                = "tp.eval.company-as-code.com"
+  name                = var.dns_zone_name
   resource_group_name = var.resource_group_name
 }

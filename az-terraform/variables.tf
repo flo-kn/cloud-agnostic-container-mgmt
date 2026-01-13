@@ -92,7 +92,12 @@ variable "waf_enabled" {
 }
 
 variable "workload_identity" {
-  description = "Workload Id of the pod responsibel for configuring the the Application Gateway"
+  description = "Workload Id of the pod responsible for configuring the the Application Gateway"
   type        = string
   default     = "azure_ingress_workload_identity"
+}
+
+variable "dns_zone_name" {
+  description = "The name of the DNS zone to create"
+  type        = string
 }
