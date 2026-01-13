@@ -48,7 +48,7 @@ MacOS:
 
   ```
   export customDomain="my.domain.com"
-  ```
+
 
 4. Dry-Run:
 
