@@ -8,3 +8,9 @@ variable "dns_zone_name" {
   description = "The name of the DNS zone"
   type        = string
 }
+
+variable "tags" {
+  description = "Tags to apply to the DNS zone"
+  type        = map(string)
+  default     = {}
+}
