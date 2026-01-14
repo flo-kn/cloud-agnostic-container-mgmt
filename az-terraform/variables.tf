@@ -101,3 +101,14 @@ variable "dns_zone_name" {
   description = "The name of the DNS zone to create"
   type        = string
 }
+
+variable "acr_name" {
+  description = "The name of the Azure Container Registry. Must be globally unique and alphanumeric only."
+  type        = string
+}
+
+variable "acr_sku" {
+  description = "The SKU tier for the container registry. Options: Basic, Standard, Premium"
+  type        = string
+  default     = "Basic"
+}
