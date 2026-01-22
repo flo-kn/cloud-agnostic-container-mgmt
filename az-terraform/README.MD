@@ -46,17 +46,18 @@ MacOS:
 
 4. set the custom domain
 
-  ```
-  export customDomain="my.domain.com"
+   ```
+   export customDomain="my.domain.com"
+   ```
 
 
-4. Dry-Run:
+5. Dry-Run:
 
    ```sh
    terraform plan -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId} -var="dns_zone_name"=${customDomain} -var="subscription_id=$(az account show --query id -o tsv)"
    ```
 
-5. Deploy everything:
+6. Deploy everything:
 
    ```sh
    terraform apply -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId} -var="dns_zone_name"=${customDomain} -var="subscription_id=$(az account show --query id -o tsv)"
@@ -102,13 +103,13 @@ MacOS:
 
    Congrats! 🥳 You successfully deployed a Hello World WebApp to an Azure AKS K8s Cluster exposed via AGIC enabled Azure Application Gateway. Happy Multi-Clouding!
 
-6. [OPTIONAL:] Update you kube-config in order to interact with the k8s cluster:
+7. [OPTIONAL:] Update you kube-config in order to interact with the k8s cluster:
 
    ```sh
    az aks get-credentials --resource-group multi-cloud-demo-rg --name aksdev
    ```
 
-7. [OPTIONAL:] Tear down all resources again of your dev environment again.
+8. [OPTIONAL:] Tear down all resources again of your dev environment again.
    ```sh
    terraform destroy -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
    ```
