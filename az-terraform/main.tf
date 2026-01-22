@@ -13,11 +13,11 @@ module "resource_group" {
   tags     = local.common_tags
 }
 
-module "dns" {
-  source              = "./modules/dns"
-  resource_group_name = module.resource_group.resource_group_name
-  dns_zone_name       = var.dns_zone_name
-}
+# module "dns" {
+#   source              = "./modules/dns"
+#   resource_group_name = module.resource_group.resource_group_name
+#   dns_zone_name       = var.dns_zone_name
+# }
 
 
 module "vnet" {
@@ -125,52 +125,52 @@ module "container_registry" {
 
 # }
 
-# resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
-#   name                = local.aksClusterName
-#   dns_prefix          = var.aksDnsPrefix
-#   sku_tier            = "Free"
-#   location            = module.resource_group.resource_group_location
-#   resource_group_name = module.resource_group.resource_group_name
-#   kubernetes_version  = var.kubernetesVersion
-#   oidc_issuer_enabled = true
-#   workload_identity_enabled = true
+resource "azurerm_kubernetes_cluster" "multi_cloud_demo_aks" {
+  name                = local.aksClusterName
+  dns_prefix          = var.aksDnsPrefix
+  sku_tier            = "Free"
+  location            = module.resource_group.resource_group_location
+  resource_group_name = module.resource_group.resource_group_name
+  kubernetes_version  = var.kubernetesVersion
+  oidc_issuer_enabled = true
+  workload_identity_enabled = true
 
-#   default_node_pool {
-#     name            = "agentpool"
-#     node_count      = var.aksAgentCount
-#     vm_size         = var.aksAgentVMSize
-#     os_disk_size_gb = var.aksAgentOsDiskSizeGB
-#     vnet_subnet_id  = module.vnet.subnet_aks_kubernetes_id
-#   }
+  default_node_pool {
+    name            = "agentpool"
+    node_count      = var.aksAgentCount
+    vm_size         = var.aksAgentVMSize
+    os_disk_size_gb = var.aksAgentOsDiskSizeGB
+    vnet_subnet_id  = module.vnet.subnet_aks_kubernetes_id
+  }
 
-#   # service_principal {
-#   #   client_id     = var.aksServicePrincipalAppId
-#   #   client_secret = var.aksServicePrincipalClientSecret
-#   # }
-#   identity {
-#     type = "SystemAssigned"
-#   }
+  # service_principal {
+  #   client_id     = var.aksServicePrincipalAppId
+  #   client_secret = var.aksServicePrincipalClientSecret
+  # }
+  identity {
+    type = "SystemAssigned"
+  }
 
-#   network_profile {
-#     network_plugin     = "azure"
-#     // Make sure to not let this one overlap with subnet CIDR
-#     service_cidr       = var.aksServiceCIDR
-#     dns_service_ip     = var.aksDnsServiceIP
-#   }
+  network_profile {
+    network_plugin     = "azure"
+    // Make sure to not let this one overlap with subnet CIDR
+    service_cidr       = var.aksServiceCIDR
+    dns_service_ip     = var.aksDnsServiceIP
+  }
 
-#   ### Come Back to this one ####
-#   role_based_access_control_enabled = var.aksEnableRBAC
-# }
+  ### Come Back to this one ####
+  role_based_access_control_enabled = var.aksEnableRBAC
+}
 
 
 # ###### Configure Provider #####
 
-# provider "kubernetes" {
-#   host                   = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].host
-#   client_certificate     = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].client_certificate)
-#   client_key             = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].client_key)
-#   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].cluster_ca_certificate)
-# }
+provider "kubernetes" {
+  host                   = azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].host
+  client_certificate     = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].client_certificate)
+  client_key             = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].client_key)
+  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.multi_cloud_demo_aks.kube_config[0].cluster_ca_certificate)
+}
 
 # # HELM stuff 
 # provider "helm" {
@@ -241,3 +241,10 @@ module "container_registry" {
 # module "demo-app" {
 #   source = "./modules/demo-app"
 # }
+
+module "strimzi" {
+  source = "./modules/strimzi"
+  
+  depends_on = [azurerm_kubernetes_cluster.multi_cloud_demo_aks]
+}
+
