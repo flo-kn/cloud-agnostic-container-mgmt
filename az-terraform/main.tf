@@ -8,8 +8,9 @@ provider "azurerm" {
 data "azurerm_subscription" "current" {}
 
 module "resource_group" {
-  source = "./modules/resource-group"
+  source   = "./modules/resource-group"
   location = local.location
+  tags     = local.common_tags
 }
 
 module "dns" {
@@ -20,9 +21,18 @@ module "dns" {
 
 
 module "vnet" {
-  source = "./modules/kubernetes-platform-infra/vnet"
-  location = local.location
+  source              = "./modules/kubernetes-platform-infra/vnet"
+  location            = local.location
   resource_group_name = module.resource_group.resource_group_name
+}
+
+module "container_registry" {
+  source              = "./modules/container-registry"
+  acr_name            = var.acr_name
+  resource_group_name = module.resource_group.resource_group_name
+  location            = module.resource_group.resource_group_location
+  acr_sku             = var.acr_sku
+  tags                = local.common_tags
 }
 
 # resource "azurerm_user_assigned_identity" "identity" {

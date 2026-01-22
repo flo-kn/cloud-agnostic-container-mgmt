@@ -2,6 +2,21 @@ output "subscription_id" {
   value = data.azurerm_subscription.current.subscription_id
 }
 
+output "acr_name" {
+  description = "The name of the Azure Container Registry"
+  value       = module.container_registry.acr_name
+}
+
+output "acr_login_server" {
+  description = "The login server URL for the Azure Container Registry"
+  value       = module.container_registry.acr_login_server
+}
+
+output "acr_id" {
+  description = "The ID of the Azure Container Registry"
+  value       = module.container_registry.acr_id
+}
+
 # output "application_gateway_name" {
 #   value = azurerm_application_gateway.aks_appgw.name
 # }

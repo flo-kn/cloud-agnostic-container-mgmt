@@ -6,4 +6,9 @@ locals {
   applicationGatewayPublicIpName = "appgwpublicip${local.environmentPrefix}"
   aksClusterName = "aks${local.environmentPrefix}"
 
+  common_tags = {
+    environment = var.environmentPrefix
+    managed_by  = "terraform"
+    project     = "multi-cloud-demo"
+  }
 }

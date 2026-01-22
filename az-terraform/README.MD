@@ -109,7 +109,26 @@ MacOS:
    az aks get-credentials --resource-group multi-cloud-demo-rg --name aksdev
    ```
 
-8. [OPTIONAL:] Tear down all resources again of your dev environment again.
+## Azure Container Registry (ACR)
+
+The Terraform configuration includes an Azure Container Registry module that creates a private container registry for your Docker images.
+
+### Attaching ACR to AKS
+
+After deploying your infrastructure, you can attach the ACR to your AKS cluster to allow seamless image pulls without credentials:
+
+```sh
+# Get the ACR name from Terraform outputs
+ACR_NAME=$(terraform output -raw acr_name)
+
+# Attach ACR to AKS cluster
+az aks update --name aksdev --resource-group multi-cloud-demo-rg --attach-acr ${ACR_NAME}
+```
+
+
+## Cleanup
+
+7. [OPTIONAL:] Tear down all resources again of your dev environment again.
    ```sh
    terraform destroy -var="aksServicePrincipalAppId=${appId}" -var="aksServicePrincipalClientSecret=${password}" -var="aksServicePrincipalObjectId"=${objectId}
    ```
